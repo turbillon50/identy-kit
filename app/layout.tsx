@@ -5,6 +5,11 @@ import BottomNav from "@/components/BottomNav";
 export const metadata: Metadata = {
   title: "Identy-Kit — Carnet de Identidad Digital",
   description: "Tu información esencial protegida, lista para una emergencia.",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/favicon-32.png",
+    apple: "/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {
