@@ -1,9 +1,5 @@
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 512 460" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="halo" cx="50%" cy="36%" r="58%">
-      <stop offset="0%" stop-color="#1FD1B8" stop-opacity="0.40"/>
-      <stop offset="100%" stop-color="#1FD1B8" stop-opacity="0"/>
-    </radialGradient>
     <linearGradient id="accent" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#4FF0D8"/>
       <stop offset="100%" stop-color="#129488"/>
@@ -17,23 +13,20 @@
       <stop offset="100%" stop-color="#2BC9B2"/>
     </linearGradient>
   </defs>
-  <rect width="512" height="512" rx="118" fill="#08080c"/>
-  <circle cx="256" cy="188" r="200" fill="url(#halo)"/>
-  <path d="M256 78
-           L378 116
-           V246
-           C378 338 322 398 256 432
-           C190 398 134 338 134 246
-           V116
+  <path d="M256 38
+           L378 76
+           V206
+           C378 298 322 358 256 392
+           C190 358 134 298 134 206
+           V76
            Z"
         fill="#0b0b10" stroke="url(#accent)" stroke-width="12" stroke-linejoin="round"/>
-  <g transform="translate(176,150)">
+  <g transform="translate(176,110)">
     <path d="M0 18 h28 v28 h28 v28 h-28 v28 h-28 v-28 h-28 v-28 h28 z" fill="url(#fretA)"/>
     <path d="M68 18 h28 v28 h28 v28 h-28 v28 h-28 v-28 h-28 v-28 h28 z" fill="url(#fretB)"/>
   </g>
-  <path d="M150 300 h40 l14 -32 l20 52 l16 -78 l16 58 h106"
+  <path d="M150 260 h40 l14 -32 l20 52 l16 -78 l16 58 h106"
         fill="none" stroke="#F3FFFC" stroke-width="9"
         stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
-  <circle cx="362" cy="300" r="6" fill="#F3FFFC"/>
-  <text x="256" y="476" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="42" fill="#F3FFFC" letter-spacing="2">IDENTY-KIT</text>
+  <circle cx="362" cy="260" r="6" fill="#F3FFFC"/>
 </svg>
