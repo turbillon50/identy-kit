@@ -3,37 +3,37 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import LogoMark from "@/components/LogoMark";
+import LockScreen from "@/components/LockScreen";
+import BottomNav from "@/components/BottomNav";
+import SOSButton from "@/components/SOSButton";
+import InstallPrompt from "@/components/InstallPrompt";
+import PageTransition from "@/components/PageTransition";
 
-export default function Splash({ children }: { children: React.ReactNode }) {
-  const [show, setShow] = useState(true);
+type Stage = "splash" | "lock" | "app";
+
+export default function AppGate({ children }: { children: React.ReactNode }) {
+  const [stage, setStage] = useState<Stage>("splash");
 
   useEffect(() => {
-    const t = setTimeout(() => setShow(false), 2000);
+    const t = setTimeout(() => setStage("lock"), 2000);
     return () => clearTimeout(t);
   }, []);
 
   return (
     <>
       <AnimatePresence>
-        {show && (
+        {stage === "splash" && (
           <motion.div
             key="splash"
-            initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
             className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-bg"
           >
             <motion.div
-              animate={{
-                scale: [1, 1.08, 1],
-                opacity: [0.55, 0.95, 0.55],
-              }}
+              animate={{ scale: [1, 1.08, 1], opacity: [0.55, 0.95, 0.55] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
               className="absolute w-[60vw] h-[60vw] max-w-[420px] max-h-[420px] rounded-full"
-              style={{
-                background:
-                  "radial-gradient(circle, rgba(31,209,184,0.45) 0%, rgba(31,209,184,0) 70%)",
-              }}
+              style={{ background: "radial-gradient(circle, rgba(31,209,184,0.45) 0%, rgba(31,209,184,0) 70%)" }}
             />
             <motion.div
               initial={{ scale: 0.7, opacity: 0 }}
@@ -59,7 +59,18 @@ export default function Splash({ children }: { children: React.ReactNode }) {
           </motion.div>
         )}
       </AnimatePresence>
-      <div style={{ visibility: show ? "hidden" : "visible" }}>{children}</div>
+
+      {stage === "lock" && <LockScreen onUnlock={() => setStage("app")} />}
+
+      <div style={{ visibility: stage === "app" ? "visible" : "hidden" }}>
+        <div className="halo" />
+        <div className="relative z-10 pb-16">
+          <PageTransition>{children}</PageTransition>
+        </div>
+        {stage === "app" && <SOSButton />}
+        {stage === "app" && <InstallPrompt />}
+        <BottomNav />
+      </div>
     </>
   );
 }

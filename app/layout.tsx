@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import BottomNav from "@/components/BottomNav";
-import Splash from "@/components/Splash";
+import AppGate from "@/components/AppGate";
 
 export const metadata: Metadata = {
   title: "Identy-Kit — Carnet de Identidad Digital",
@@ -22,11 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body>
-        <Splash>
-          <div className="halo" />
-          <div className="relative z-10 pb-16">{children}</div>
-          <BottomNav />
-        </Splash>
+        <AppGate>{children}</AppGate>
       </body>
     </html>
   );

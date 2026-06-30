@@ -1,8 +1,15 @@
+"use client";
+
 import CarnetCard from "@/components/CarnetCard";
+import ProfileProgress from "@/components/ProfileProgress";
+import { SkeletonCard } from "@/components/Skeleton";
+import { useFakeLoad } from "@/hooks/useFakeLoad";
 import { PersonIcon, MedicalIcon, AcademicIcon, DocsIcon, ContactsIcon, QRIcon } from "@/components/icons";
 import Link from "next/link";
 
 export default function Home() {
+  const loading = useFakeLoad(600);
+
   return (
     <main className="flex flex-col min-h-screen">
       <header className="glass flex items-center gap-4 p-4 mx-4 mt-4">
@@ -15,12 +22,26 @@ export default function Home() {
         </div>
       </header>
 
+      <ProfileProgress percent={83} />
+
       <section className="flex flex-col gap-3 p-4 mt-2">
-        <CarnetCard href="/personales" icon={<PersonIcon className="w-6 h-6" />} title="Datos Personales" subtitle="CURP, nacimiento, tipo de sangre" />
-        <CarnetCard href="/medico" icon={<MedicalIcon className="w-6 h-6" />} title="Historial Médico" subtitle="Alergias, vacunas, padecimientos" />
-        <CarnetCard href="/academico" icon={<AcademicIcon className="w-6 h-6" />} title="Historial Académico" subtitle="Escuela, grado, certificados" />
-        <CarnetCard href="/documentos" icon={<DocsIcon className="w-6 h-6" />} title="Documentos" subtitle="INE, pasaporte, acta de nacimiento" />
-        <CarnetCard href="/contactos" icon={<ContactsIcon className="w-6 h-6" />} title="Contactos de Emergencia" subtitle="Familia y médico de cabecera" />
+        {loading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <CarnetCard href="/personales" icon={<PersonIcon className="w-6 h-6" />} title="Datos Personales" subtitle="CURP, nacimiento, tipo de sangre" />
+            <CarnetCard href="/medico" icon={<MedicalIcon className="w-6 h-6" />} title="Historial Médico" subtitle="Alergias, vacunas, padecimientos" />
+            <CarnetCard href="/academico" icon={<AcademicIcon className="w-6 h-6" />} title="Historial Académico" subtitle="Escuela, grado, certificados" />
+            <CarnetCard href="/documentos" icon={<DocsIcon className="w-6 h-6" />} title="Documentos" subtitle="INE, pasaporte, acta de nacimiento" />
+            <CarnetCard href="/contactos" icon={<ContactsIcon className="w-6 h-6" />} title="Contactos de Emergencia" subtitle="Familia y médico de cabecera" />
+          </>
+        )}
 
         <Link
           href="/emergencia"
