@@ -5,6 +5,7 @@ import { query } from "@/lib/db";
 export async function GET() {
   const { userId } = auth();
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+
   const result = await query("SELECT * FROM carnets WHERE user_id = $1", [userId]);
   return NextResponse.json(result.rows[0] ?? {});
 }
@@ -13,8 +14,12 @@ export async function POST(req: NextRequest) {
   const { userId } = auth();
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const body = await req.json();
-  const fields = ["curp","nombre","apellidos","fecha_nacimiento","tipo_sangre","alergias","padecimientos","contacto_emergencia_nombre","contacto_emergencia_tel","escuela","grado"] as const;
+  const body = (await req.json()) as Record<string, string>;
+  const fields = [
+    "curp","nombre","apellidos","fecha_nacimiento","tipo_sangre",
+    "alergias","padecimientos","contacto_emergencia_nombre",
+    "contacto_emergencia_tel","escuela","grado",
+  ];
   const values = fields.map((f) => body[f] ?? null);
 
   await query(
