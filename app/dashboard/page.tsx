@@ -1,11 +1,10 @@
-import { auth, currentUser } from "@clerk/nextjs";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getCarnetByUserId } from "@/lib/db";
 import Link from "next/link";
-import { PersonIcon, MedicalIcon, AcademicIcon, DocsIcon, ContactsIcon, QRIcon } from "@/components/icons";
 
 export default async function Dashboard() {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
   const [user, carnet] = await Promise.all([
@@ -15,10 +14,11 @@ export default async function Dashboard() {
 
   const nombre = carnet?.nombre || user?.firstName || "Usuario";
   const apellidos = carnet?.apellidos || user?.lastName || "";
+  const email = user?.emailAddresses?.[0]?.emailAddress ?? "";
   const iniciales = `${nombre[0] || ""}${apellidos[0] || ""}`.toUpperCase() || "ID";
   const progreso = [
     carnet?.curp, carnet?.tipo_sangre, carnet?.alergias,
-    carnet?.contacto_emergencia_nombre, carnet?.escuela
+    carnet?.contacto_emergencia_nombre, carnet?.escuela,
   ].filter(Boolean).length * 20;
 
   return (
@@ -30,12 +30,10 @@ export default async function Dashboard() {
         </div>
         <div className="flex-1">
           <h1 className="text-xl font-semibold text-[#1FD1B8]">{nombre} {apellidos}</h1>
-          <p className="text-sm text-gray-400">{user?.primaryEmailAddress?.emailAddress}</p>
+          <p className="text-sm text-gray-400">{email}</p>
         </div>
-        <Link href="/api/auth/sign-out" className="text-xs text-gray-500 hover:text-gray-300">Salir</Link>
       </header>
 
-      {/* Progress bar */}
       <div className="mx-4 mt-3 px-4 py-3 glass">
         <div className="flex justify-between text-xs text-gray-400 mb-1">
           <span>Perfil completado</span>
@@ -48,23 +46,20 @@ export default async function Dashboard() {
 
       <section className="flex flex-col gap-3 p-4 mt-2">
         {[
-          { href: "/personales", icon: <PersonIcon className="w-6 h-6" />, title: "Datos Personales", sub: carnet?.curp ? `CURP: ${carnet.curp}` : "Completa tu información" },
-          { href: "/medico", icon: <MedicalIcon className="w-6 h-6" />, title: "Historial Médico", sub: carnet?.tipo_sangre ? `Sangre ${carnet.tipo_sangre} · ${carnet.alergias || "Sin alergias"}` : "Alergias, vacunas, padecimientos" },
-          { href: "/academico", icon: <AcademicIcon className="w-6 h-6" />, title: "Historial Académico", sub: carnet?.escuela || "Escuela, grado, certificados" },
-          { href: "/documentos", icon: <DocsIcon className="w-6 h-6" />, title: "Documentos", sub: "INE, pasaporte, acta de nacimiento" },
-          { href: "/contactos", icon: <ContactsIcon className="w-6 h-6" />, title: "Contactos de Emergencia", sub: carnet?.contacto_emergencia_nombre ? `${carnet.contacto_emergencia_nombre} · ${carnet.contacto_emergencia_tel}` : "Familia y médico de cabecera" },
+          { href: "/personales", title: "Datos Personales", sub: carnet?.curp ? `CURP: ${carnet.curp}` : "Completa tu información" },
+          { href: "/medico", title: "Historial Médico", sub: carnet?.tipo_sangre ? `Sangre ${carnet.tipo_sangre}` : "Alergias, vacunas, padecimientos" },
+          { href: "/academico", title: "Historial Académico", sub: carnet?.escuela || "Escuela, grado, certificados" },
+          { href: "/documentos", title: "Documentos", sub: "INE, pasaporte, acta de nacimiento" },
+          { href: "/contactos", title: "Contactos de Emergencia", sub: carnet?.contacto_emergencia_nombre || "Familia y médico de cabecera" },
         ].map((item) => (
           <Link key={item.href} href={item.href} className="glass flex items-center gap-4 p-4 hover:bg-white/10 transition">
-            <div className="text-[#1FD1B8]">{item.icon}</div>
             <div>
               <div className="font-medium text-white">{item.title}</div>
               <div className="text-xs text-gray-400">{item.sub}</div>
             </div>
           </Link>
         ))}
-
-        <Link href="/emergencia" className="glass v-pulse flex items-center justify-center gap-2 py-4 mt-2 text-base font-semibold text-[#1FD1B8]">
-          <QRIcon className="w-6 h-6" />
+        <Link href="/emergencia" className="glass flex items-center justify-center gap-2 py-4 mt-2 text-base font-semibold text-[#1FD1B8]">
           Generar QR de Emergencia
         </Link>
       </section>
