@@ -1,6 +1,6 @@
 {
   "name": "identy-kit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^4.29.9",
+    "@clerk/nextjs": "^5.7.2",
     "@neondatabase/serverless": "^0.9.3",
     "framer-motion": "^11.18.2",
     "next": "14.2.25",
