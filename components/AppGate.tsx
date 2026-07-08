@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import LogoMark from "@/components/LogoMark";
+import Image from "next/image";
 import LockScreen from "@/components/LockScreen";
 import BottomNav from "@/components/BottomNav";
 import SOSButton from "@/components/SOSButton";
@@ -30,10 +30,10 @@ export default function AppGate({ children }: { children: React.ReactNode }) {
             className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-bg"
           >
             <motion.div
-              animate={{ scale: [1, 1.08, 1], opacity: [0.55, 0.95, 0.55] }}
+              animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.7, 0.4] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
               className="absolute w-[60vw] h-[60vw] max-w-[420px] max-h-[420px] rounded-full"
-              style={{ background: "radial-gradient(circle, rgba(31,209,184,0.45) 0%, rgba(31,209,184,0) 70%)" }}
+              style={{ background: "radial-gradient(circle, rgba(30,99,208,0.12) 0%, rgba(30,99,208,0) 70%)" }}
             />
             <motion.div
               initial={{ scale: 0.7, opacity: 0 }}
@@ -45,16 +45,24 @@ export default function AppGate({ children }: { children: React.ReactNode }) {
                 animate={{ scale: [1, 1.06, 1] }}
                 transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
               >
-                <LogoMark className="w-full h-full drop-shadow-[0_0_24px_rgba(31,209,184,0.55)]" />
+                <Image
+                  src="/logo.png"
+                  alt="Identy-Kit"
+                  width={112}
+                  height={112}
+                  style={{ objectFit: "contain", filter: "drop-shadow(0 0 16px rgba(30,99,208,0.2))" }}
+                  priority
+                />
               </motion.div>
             </motion.div>
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="relative mt-6 text-lg font-semibold tracking-wider text-[#F3FFFC]"
+              className="relative mt-6 text-lg font-semibold tracking-wider"
+              style={{ color: "var(--text-primary)" }}
             >
-              IDENTY<span className="text-accent">-KIT</span>
+              IDENTY<span style={{ color: "var(--accent)" }}>-KIT</span>
             </motion.p>
           </motion.div>
         )}
@@ -63,7 +71,6 @@ export default function AppGate({ children }: { children: React.ReactNode }) {
       {stage === "lock" && <LockScreen onUnlock={() => setStage("app")} />}
 
       <div style={{ visibility: stage === "app" ? "visible" : "hidden" }}>
-        <div className="halo" />
         <div className="relative z-10 pb-16">
           <PageTransition>{children}</PageTransition>
         </div>

@@ -44,7 +44,7 @@ export default function SOSButton() {
       <motion.button
         onClick={() => setOpen(true)}
         whileTap={{ scale: 0.9 }}
-        animate={{ boxShadow: ["0 0 0px rgba(239,68,68,0.5)", "0 0 22px rgba(239,68,68,0.6)", "0 0 0px rgba(239,68,68,0.5)"] }}
+        animate={{ boxShadow: ["0 0 0px rgba(220,38,38,0.4)", "0 0 22px rgba(220,38,38,0.5)", "0 0 0px rgba(220,38,38,0.4)"] }}
         transition={{ duration: 1.6, repeat: Infinity }}
         className="fixed right-4 bottom-20 z-30 w-14 h-14 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-sm"
       >
@@ -57,7 +57,8 @@ export default function SOSButton() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/70 flex items-end justify-center"
+            className="fixed inset-0 z-40 flex items-end justify-center"
+            style={{ background: "rgba(14,42,92,0.35)" }}
             onClick={() => !sharing && setOpen(false)}
           >
             <motion.div
@@ -68,24 +69,25 @@ export default function SOSButton() {
               onClick={(e) => e.stopPropagation()}
               className="glass w-full max-w-md mx-4 mb-6 p-5"
             >
-              <div className="flex items-center gap-2 text-red-400 mb-3">
+              <div className="flex items-center gap-2 text-red-600 mb-3">
                 <AlertIcon className="w-5 h-5" />
                 <p className="font-semibold">Activar SOS</p>
               </div>
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
                 Se compartirá tu ubicación y se llamará de inmediato a {CONTACTO_PRIORITARIO.nombre}.
               </p>
               <button
                 onClick={handleSOS}
                 disabled={sharing}
-                className="w-full py-3 rounded-xl bg-red-600 flex items-center justify-center gap-2 font-semibold disabled:opacity-60"
+                className="w-full py-3 rounded-xl bg-red-600 flex items-center justify-center gap-2 font-semibold text-white disabled:opacity-60"
               >
                 <PhoneIcon className="w-4 h-4" />
                 {sharing ? "Enviando ubicación…" : "Confirmar y llamar"}
               </button>
               <button
                 onClick={() => setOpen(false)}
-                className="w-full py-3 mt-2 rounded-xl text-gray-400 text-sm"
+                className="w-full py-3 mt-2 rounded-xl text-sm"
+                style={{ color: "var(--text-secondary)" }}
               >
                 Cancelar
               </button>

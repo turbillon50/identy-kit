@@ -18,14 +18,17 @@ export default function CarnetCard({
       href={href}
       className="glass flex items-center p-4 gap-4 active:scale-[0.98] transition-transform"
     >
-      <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-[rgba(31,209,184,0.12)] text-accent shrink-0">
+      <div
+        className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
+        style={{ background: "rgba(30,99,208,0.1)", color: "var(--accent)" }}
+      >
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-base">{title}</h3>
-        <p className="text-sm text-gray-400 truncate">{subtitle}</p>
+        <h3 className="font-medium text-base" style={{ color: "var(--text-primary)" }}>{title}</h3>
+        <p className="text-sm truncate" style={{ color: "var(--text-secondary)" }}>{subtitle}</p>
       </div>
-      <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
+      <ChevronRight className="w-5 h-5 shrink-0" style={{ color: "var(--text-secondary)" }} />
     </Link>
   );
 }

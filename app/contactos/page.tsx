@@ -14,10 +14,10 @@ export default function Page() {
         {contactos.map((c) => (
           <a key={c.tel} href={`tel:${c.tel}`} className="glass p-4 flex items-center justify-between">
             <div>
-              <p>{c.nombre}</p>
-              <p className="text-xs text-gray-400">{c.tel}</p>
+              <p style={{ color: "var(--text-primary)" }}>{c.nombre}</p>
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{c.tel}</p>
             </div>
-            <span className="text-accent text-sm">Llamar</span>
+            <span className="text-sm font-medium" style={{ color: "var(--accent)" }}>Llamar</span>
           </a>
         ))}
       </section>

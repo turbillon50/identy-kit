@@ -6,16 +6,16 @@ export default function Page() {
       <PageHeader title="Historial Académico" />
       <section className="flex flex-col gap-3 mx-4">
         <div className="glass p-4">
-          <p className="text-xs text-gray-400 mb-1">Educación superior</p>
-          <p>Lic. en Administración Turística — Universidad de Quintana Roo (2003–2007)</p>
+          <p className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Educación superior</p>
+          <p style={{ color: "var(--text-primary)" }}>Lic. en Administración Turística — Universidad de Quintana Roo (2003–2007)</p>
         </div>
         <div className="glass p-4">
-          <p className="text-xs text-gray-400 mb-1">Certificaciones</p>
-          <p>Primeros Auxilios Cruz Roja (2024), Manejo de Crisis Hotelera (2023)</p>
+          <p className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Certificaciones</p>
+          <p style={{ color: "var(--text-primary)" }}>Primeros Auxilios Cruz Roja (2024), Manejo de Crisis Hotelera (2023)</p>
         </div>
         <div className="glass p-4">
-          <p className="text-xs text-gray-400 mb-1">Idiomas</p>
-          <p>Español (nativo), Inglés (avanzado), Maya (nativo)</p>
+          <p className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Idiomas</p>
+          <p style={{ color: "var(--text-primary)" }}>Español (nativo), Inglés (avanzado), Maya (nativo)</p>
         </div>
       </section>
     </main>

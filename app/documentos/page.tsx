@@ -10,9 +10,9 @@ export default function Page() {
       <section className="flex flex-col gap-3 mx-4">
         {docs.map((d) => (
           <div key={d} className="glass p-4 flex items-center gap-3">
-            <DocsIcon className="w-5 h-5 text-accent" />
-            <p>{d}</p>
-            <span className="ml-auto text-xs text-gray-500">Cargado</span>
+            <DocsIcon className="w-5 h-5" style={{ color: "var(--accent)" }} />
+            <p style={{ color: "var(--text-primary)" }}>{d}</p>
+            <span className="ml-auto text-xs" style={{ color: "var(--text-secondary)" }}>Cargado</span>
           </div>
         ))}
       </section>

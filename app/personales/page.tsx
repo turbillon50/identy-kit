@@ -13,11 +13,17 @@ export default function Page() {
   return (
     <main>
       <PageHeader title="Datos Personales" />
-      <section className="glass mx-4 p-4 flex flex-col divide-y divide-white/10">
-        {datos.map((d) => (
-          <div key={d.label} className="py-3 first:pt-0 last:pb-0">
-            <p className="text-xs text-gray-400">{d.label}</p>
-            <p className="text-base">{d.value}</p>
+      <section className="glass mx-4 p-4 flex flex-col" style={{ borderTop: "none" }}>
+        {datos.map((d, i) => (
+          <div
+            key={d.label}
+            className="py-3"
+            style={{
+              borderBottom: i < datos.length - 1 ? "1px solid #e5e9f0" : "none",
+            }}
+          >
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{d.label}</p>
+            <p className="text-base" style={{ color: "var(--text-primary)" }}>{d.value}</p>
           </div>
         ))}
       </section>
