@@ -47,9 +47,19 @@ export default async function Emergencia({ params }: { params: { qr: string } })
   for (const t of [med.allergies, med.conditions, id.public_note]) {
     const limpio = String(t || "").trim();
     if (!limpio) continue;
+    // Se compara por palabras significativas, no por texto exacto: alguien
+    // escribe "Diabetes tipo 1" en padecimientos y "Diabética tipo 1, puede
+    // requerir insulina" en la nota, y es el mismo dato dicho de otro modo.
+    const clave = (t: string) => new Set(
+      t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9 ]/g, " ").split(/\s+/)
+        .filter((w) => w.length > 3).map((w) => w.slice(0, 5)));
+    const nueva = clave(limpio);
     const yaEsta = partes.some((p) => {
-      const a = p.toLowerCase(), b = limpio.toLowerCase();
-      return a.includes(b) || b.includes(a);
+      const previa = clave(p);
+      if (!nueva.size || !previa.size) return false;
+      const comunes = [...nueva].filter((w) => previa.has(w)).length;
+      return comunes >= Math.min(nueva.size, previa.size) * 0.6;
     });
     if (!yaEsta) partes.push(limpio);
   }
@@ -71,29 +81,38 @@ export default async function Emergencia({ params }: { params: { qr: string } })
         {esMascota ? "Mascota perdida" : "Ficha de emergencia"}
       </div>
 
-      {/* Quién es */}
+      {/* Quién es. El nombre lleva el ancho completo: un nombre largo partido
+          en tres renglones se lee peor que uno en dos, y aquí se lee de prisa. */}
       <div className="e-cabeza">
-        <div className="row" style={{ alignItems: "flex-start", gap: 15 }}>
+        <div className="row" style={{ alignItems: "center", gap: 14 }}>
           {id.photo_url
             ? <img className="e-foto" src={id.photo_url} alt="" />
             : <div className="e-foto">{SIN_FOTO[id.kind] || "🧑"}</div>}
-
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="e-nombre">{id.display_name}</div>
             {meta && <div className="e-meta">{meta}</div>}
+          </div>
+        </div>
+
+        {/* Los signos que se buscan primero, en su propio renglón */}
+        {(id.blood_type || id.organ_donor) && (
+          <div className="e-signos">
+            {id.blood_type && (
+              <div className="e-sangre">
+                <span className="n">{id.blood_type}</span>
+                <span className="t">Sangre</span>
+              </div>
+            )}
             {id.organ_donor && (
-              <span className="pill ok" style={{ marginTop: 9 }}>Donante de órganos</span>
+              <div className="e-donante">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 21s-7.5-4.6-9.5-9A5.4 5.4 0 0 1 12 6.6 5.4 5.4 0 0 1 21.5 12c-2 4.4-9.5 9-9.5 9z"/>
+                </svg>
+                Donante de órganos
+              </div>
             )}
           </div>
-
-          {/* Lo primero que pregunta un paramédico */}
-          {id.blood_type && (
-            <div className="e-sangre">
-              <span className="n">{id.blood_type}</span>
-              <span className="t">Sangre</span>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Lo que puede matar a alguien si no se sabe */}

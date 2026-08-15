@@ -349,3 +349,10 @@ select.input{appearance:none;
 .bar{display:none}
 .foot{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:26px;
   color:var(--gris-claro);font-size:12.5px;font-weight:600}
+
+/* Los signos que se buscan primero, en su propio renglón para que el
+   nombre lleve el ancho completo */
+.e-signos{display:flex;align-items:stretch;gap:10px;margin-top:15px}
+.e-donante{display:flex;align-items:center;gap:8px;flex:1;padding:12px 15px;
+  border-radius:17px;background:#ECFDF5;border:2px solid rgba(4,120,87,.18);
+  color:var(--ok);font-size:14px;font-weight:700;line-height:1.25}
