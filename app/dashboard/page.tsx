@@ -1,79 +1,73 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import { getCarnetByUserId } from "@/lib/db";
 import Link from "next/link";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { sql } from "../../lib/db";
+import AppShell from "../../components/AppShell";
+
+export const dynamic = "force-dynamic";
+const label: Record<string,string> = { person:"Persona", pet:"Mascota", other:"Otro" };
 
 export default async function Dashboard() {
   const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const user = await currentUser();
+  const ids = await sql`select i.*, (select count(*) from found_events f where f.identity_id=i.id) as founds
+    from identities i where owner_clerk_user_id=${userId} order by created_at desc` as any[];
+  const recientes = await sql`select f.*, i.display_name, i.kind from found_events f
+    join identities i on i.id=f.identity_id
+    where i.owner_clerk_user_id=${userId} order by f.created_at desc limit 4` as any[];
 
-  const [user, carnet] = await Promise.all([
-    currentUser(),
-    getCarnetByUserId(userId),
-  ]);
-
-  const nombre = carnet?.nombre || user?.firstName || "Usuario";
-  const apellidos = carnet?.apellidos || user?.lastName || "";
-  const email = user?.emailAddresses?.[0]?.emailAddress ?? "";
-  const iniciales = `${nombre[0] || ""}${apellidos[0] || ""}`.toUpperCase() || "ID";
-  const progreso = [
-    carnet?.curp, carnet?.tipo_sangre, carnet?.alergias,
-    carnet?.contacto_emergencia_nombre, carnet?.escuela,
-  ].filter(Boolean).length * 20;
+  const total = ids.length;
+  const avisos = ids.reduce((a:number,i:any)=>a+Number(i.founds||0),0);
+  const personas = ids.filter((i:any)=>i.kind==="person").length;
+  const mascotas = ids.filter((i:any)=>i.kind==="pet").length;
+  const nombre = user?.firstName || "";
 
   return (
-    <main className="flex flex-col min-h-screen">
-      <header className="glass flex items-center gap-4 p-4 mx-4 mt-4">
-        <div
-          className="w-14 h-14 rounded-full flex items-center justify-center font-semibold text-lg"
-          style={{ background: "rgba(30,99,208,0.1)", color: "var(--accent)" }}
-        >
-          {iniciales}
-        </div>
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold" style={{ color: "var(--accent)" }}>{nombre} {apellidos}</h1>
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{email}</p>
-        </div>
-      </header>
+    <AppShell active="inicio" title="Inicio">
+      <div className="h1" style={{fontSize:24}}>Hola{nombre?`, ${nombre}`:""} 👋</div>
+      <div className="sub" style={{marginBottom:18}}>Este es el estado de tus carnets de emergencia.</div>
 
-      <div className="mx-4 mt-3 px-4 py-3 glass">
-        <div className="flex justify-between text-xs mb-1">
-          <span style={{ color: "var(--text-secondary)" }}>Perfil completado</span>
-          <span className="font-medium" style={{ color: "var(--accent)" }}>{progreso}%</span>
-        </div>
-        <div className="w-full rounded-full h-1.5" style={{ background: "#e5e9f0" }}>
-          <div className="h-1.5 rounded-full transition-all" style={{ width: `${progreso}%`, background: "var(--accent)" }} />
-        </div>
+      <div className="kpigrid">
+        <div className="kpi"><span className="bar"/><div className="kl">Carnets activos</div><div className="kv">{total}</div><span className="ki"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg></span></div>
+        <div className="kpi"><span className="bar"/><div className="kl">Avisos recibidos</div><div className="kv" style={{color:avisos>0?"var(--danger)":undefined}}>{avisos}</div><span className="ki" style={{background:avisos>0?"#fff1f0":undefined,color:avisos>0?"var(--danger)":undefined}}>🆘</span></div>
+        <div className="kpi"><span className="bar"/><div className="kl">Personas</div><div className="kv">{personas}</div><span className="ki">🧑</span></div>
+        <div className="kpi"><span className="bar"/><div className="kl">Mascotas</div><div className="kv">{mascotas}</div><span className="ki">🐾</span></div>
       </div>
 
-      <section className="flex flex-col gap-3 p-4 mt-2">
-        {[
-          { href: "/personales", title: "Datos Personales", sub: carnet?.curp ? `CURP: ${carnet.curp}` : "Completa tu información" },
-          { href: "/medico", title: "Historial Médico", sub: carnet?.tipo_sangre ? `Sangre ${carnet.tipo_sangre}` : "Alergias, vacunas, padecimientos" },
-          { href: "/academico", title: "Historial Académico", sub: carnet?.escuela || "Escuela, grado, certificados" },
-          { href: "/documentos", title: "Documentos", sub: "INE, pasaporte, acta de nacimiento" },
-          { href: "/contactos", title: "Contactos de Emergencia", sub: carnet?.contacto_emergencia_nombre || "Familia y médico de cabecera" },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="glass flex items-center gap-4 p-4 transition"
-            style={{ color: "var(--text-primary)" }}
-          >
-            <div>
-              <div className="font-medium">{item.title}</div>
-              <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{item.sub}</div>
+      <div className="seclabel">Tus carnets<Link href="/admin">Administrar</Link></div>
+      {total === 0 ? (
+        <div className="card empty">
+          <div style={{ fontSize: 42 }}>🪪</div>
+          <b style={{ display: "block", marginTop: 8, color: "var(--ink)" }}>Crea tu primer carnet</b>
+          <div style={{ marginTop: 4 }}>Toca el botón azul de abajo para empezar.</div>
+        </div>
+      ) : ids.map((i:any) => (
+        <Link key={i.id} href={`/carnet/${i.id}`} className="idcard">
+          <div className="avatar">{i.photo_url ? <img src={i.photo_url} alt=""/> : (i.kind==="pet"?"🐾":i.kind==="other"?"📦":"🧑")}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>{i.display_name}</div>
+            <div className="row" style={{ gap: 6, marginTop: 3 }}>
+              <span className={`pill ${i.kind}`}>{label[i.kind]}</span>
+              {i.blood_type && <span className="pill">🩸 {i.blood_type}</span>}
+              {Number(i.founds)>0 && <span className="pill" style={{ background:"#fff1f0", color:"var(--danger)" }}>🆘 {i.founds}</span>}
             </div>
-          </Link>
-        ))}
-        <Link
-          href="/emergencia"
-          className="glass flex items-center justify-center gap-2 py-4 mt-2 text-base font-semibold"
-          style={{ color: "var(--accent)" }}
-        >
-          Generar QR de Emergencia
+          </div>
+          <span style={{ color: "var(--muted)", fontSize: 22 }}>›</span>
         </Link>
-      </section>
-    </main>
+      ))}
+
+      {recientes.length>0 && (<>
+        <div className="seclabel">Actividad reciente<Link href="/actividad">Ver todo</Link></div>
+        {recientes.map((f:any)=>(
+          <div key={f.id} className="acti">
+            <div className="ic">🆘</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:700,fontSize:14.5,color:"var(--brand-ink)"}}>Escanearon el carnet de {f.display_name}</div>
+              <div className="sub" style={{marginTop:2}}>{new Date(f.created_at).toLocaleString("es-MX")}{f.finder_note?` · "${f.finder_note}"`:""}</div>
+              {f.lat && <a target="_blank" href={`https://maps.google.com/?q=${f.lat},${f.lng}`} style={{color:"var(--accent)",fontWeight:700,fontSize:13}}>Ver ubicación en mapa</a>}
+            </div>
+          </div>
+        ))}
+      </>)}
+    </AppShell>
   );
 }

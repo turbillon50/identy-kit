@@ -1,76 +1,171 @@
-import Link from "next/link";
-import Image from "next/image";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { SignInButton, SignUpButton } from "@clerk/nextjs";
 
-export default function Landing() {
+export default async function Home() {
+  const { userId } = await auth();
+  if (userId) redirect("/dashboard");
   return (
-    <main className="flex flex-col min-h-screen bg-bg">
+    <div className="lp">
+      {/* NAV */}
+      <nav className="lp-nav">
+        <div className="lp-in">
+          <div className="lp-logo"><img src="/icon-192.png" alt="" /> Identy·kit</div>
+          <SignInButton mode="modal"><button className="lp-navbtn ghost">Entrar</button></SignInButton>
+        </div>
+      </nav>
 
-      {/* Hero */}
-      <section className="relative flex flex-col items-center text-center px-6 pt-16 pb-12 z-10">
-        <Image src="/logo.png" alt="Identy-Kit" width={120} height={120} className="mb-6" priority />
-        <h1 className="text-4xl md:text-5xl font-semibold leading-tight mb-4" style={{ color: "var(--text-primary)" }}>
-          Tu identidad digital,<br />siempre contigo
-        </h1>
-        <p className="max-w-sm mb-8 text-base" style={{ color: "var(--text-secondary)" }}>
-          Carnet digital de emergencia con datos médicos, contactos y QR instantáneo. Disponible offline, siempre.
-        </p>
-
-        {/* Mockup carnet */}
-        <div className="glass w-full max-w-xs p-5 mb-10 text-left">
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
-              style={{ background: "rgba(30,99,208,0.1)", color: "var(--accent)" }}
-            >MT</div>
-            <div>
-              <div className="font-semibold" style={{ color: "var(--text-primary)" }}>Marisol Tun</div>
-              <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Carnet ID 8723-A · Cancún, QR</div>
-            </div>
+      {/* HERO */}
+      <header className="lp-hero">
+        <div className="lp-in">
+          <img className="lock" src="/logo.png" alt="Identy-Kit" />
+          <span className="lp-eyebrow">Identidad de emergencia con QR</span>
+          <h1 className="lp-title">Si algo pasa, tu información <span>salva minutos</span></h1>
+          <p className="lp-lede">
+            Un carnet digital con código QR para ti, tu familia y tus mascotas.
+            Quien esté cerca escanea y ve al instante tu tipo de sangre, alergias,
+            padecimientos y a quién llamar. Sin instalar apps, sin claves.
+          </p>
+          <div className="lp-cta">
+            <SignUpButton mode="modal"><button className="btn">Crear mi carnet</button></SignUpButton>
+            <a href="#como" className="btn ghost">Ver cómo funciona</a>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
-            <div><span style={{ color: "#8a9ab5" }}>Sangre</span><br />O+</div>
-            <div><span style={{ color: "#8a9ab5" }}>Alergias</span><br />Penicilina</div>
-            <div><span style={{ color: "#8a9ab5" }}>Contacto</span><br />Pedro Tun</div>
-            <div><span style={{ color: "#8a9ab5" }}>Tel</span><br />998 123 4567</div>
-          </div>
-          <div className="mt-4 flex items-center gap-2 text-xs font-medium" style={{ color: "var(--accent)" }}>
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zm6 10v6h-6v-2h4v-4h2zm-10 6H4v-6h2v4h4v2z"/>
-            </svg>
-            QR de emergencia activo
+          <div className="lp-trust">
+            <span>✓ Sin instalar apps</span>
+            <span>✓ Listo en 2 minutos</span>
+            <span>✓ Tú decides qué se ve</span>
           </div>
         </div>
+      </header>
 
-        <Link
-          href="/sign-up"
-          className="px-8 py-3 font-semibold rounded-full transition"
-          style={{ background: "var(--accent)", color: "#ffffff" }}
-        >
-          Crear mi carnet gratis
-        </Link>
-        <Link
-          href="/sign-in"
-          className="mt-3 text-xs transition"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          Ya tengo cuenta →
-        </Link>
-      </section>
+      {/* PARA QUIÉN */}
+      <div className="lp-in">
+        <div className="lp-chips">
+          <span className="lp-chip">🧑 Para ti</span>
+          <span className="lp-chip">👨‍👩‍👧 Tu familia</span>
+          <span className="lp-chip">🧓 Adultos mayores</span>
+          <span className="lp-chip">🧒 Niños</span>
+          <span className="lp-chip">🐾 Mascotas</span>
+          <span className="lp-chip">✈️ Viajes</span>
+        </div>
+      </div>
 
-      {/* Features */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 pb-16 max-w-4xl mx-auto w-full z-10">
-        {[
-          { title: "Emergencia médica", desc: "Datos críticos visibles al instante para socorristas. Sin login.", icon: <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor" style={{ color: "var(--accent)" }}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> },
-          { title: "QR instantáneo", desc: "Genera tu código QR con un toque. Compártelo con médicos o familiares.", icon: <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor" style={{ color: "var(--accent)" }}><path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zm6 10v6h-6v-2h4v-4h2zm-10 6H4v-6h2v4h4v2z"/></svg> },
-          { title: "Siempre disponible", desc: "En la nube y offline. Tu información donde la necesites, cuando la necesites.", icon: <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor" style={{ color: "var(--accent)" }}><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg> },
-        ].map((f) => (
-          <div key={f.title} className="glass p-5">
-            <div className="mb-3">{f.icon}</div>
-            <div className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>{f.title}</div>
-            <div className="text-sm" style={{ color: "var(--text-secondary)" }}>{f.desc}</div>
+      {/* CÓMO FUNCIONA */}
+      <section className="lp-sec" id="como">
+        <div className="lp-in">
+          <div className="lp-kicker">Cómo funciona</div>
+          <h2 className="lp-h2">Tres pasos y quedas protegido</h2>
+          <p className="lp-p">No necesitas conocimientos técnicos. Lo armas una vez y te acompaña siempre.</p>
+          <div className="lp-steps">
+            <div className="lp-step"><div className="n">1</div><h4>Crea el carnet</h4><p>Registra datos vitales, ficha médica y a quién llamar. Uno por cada persona o mascota.</p></div>
+            <div className="lp-step"><div className="n">2</div><h4>Recibe tu QR</h4><p>Imprímelo para la cartera, el collar de tu mascota, la mochila del niño o pégalo en casa.</p></div>
+            <div className="lp-step"><div className="n">3</div><h4>En una emergencia</h4><p>Quien lo escanea ve tu ficha, llama a tu contacto con un toque o marca al 911 al instante.</p></div>
           </div>
-        ))}
+        </div>
       </section>
-    </main>
+
+      {/* QUÉ VE QUIEN TE ENCUENTRA */}
+      <section className="lp-sec alt">
+        <div className="lp-in">
+          <div className="lp-demo">
+            <div className="txt">
+              <div className="lp-kicker" style={{ textAlign: "left" }}>Lo que ve quien te encuentra</div>
+              <h3>Toda tu info vital, sin buscar</h3>
+              <p>Con un escaneo aparece una ficha clara, hecha para actuar rápido: sangre, alergias y a quién llamar, con botones de llamada directa.</p>
+              <ul>
+                <li>🩸 <span><b>Tipo de sangre</b> y si eres donante, visibles al instante</span></li>
+                <li>⚠️ <span><b>Alergias y padecimientos</b> destacados para el paramédico</span></li>
+                <li>📞 <span><b>Llamada de un toque</b> a tus contactos y al 911</span></li>
+                <li>📍 <span><b>“Lo encontré”</b>: quien te halla comparte su ubicación contigo</span></li>
+              </ul>
+            </div>
+            <div className="mock">
+              <div className="mb">🆘 FICHA DE EMERGENCIA</div>
+              <div className="mbody">
+                <div className="mtop">
+                  <div className="mph">🧑</div>
+                  <div>
+                    <div className="mname">Carlos M.</div>
+                    <div className="mrow">
+                      <span className="mtag red">🩸 A+</span>
+                      <span className="mtag gray">Donante</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mrow" style={{ marginBottom: 12 }}>
+                  <span className="mtag red">Alergia: Penicilina</span>
+                  <span className="mtag gray">Diabético</span>
+                </div>
+                <div className="mcall"><span>📞 Llamar a Marisol (esposa)</span><span>›</span></div>
+                <div className="mcall r"><span>🚑 Emergencias 911</span><span>›</span></div>
+                <div className="mfound">📍 Avisar que lo encontré</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* BENEFICIOS */}
+      <section className="lp-sec">
+        <div className="lp-in">
+          <div className="lp-kicker">Todo lo que incluye</div>
+          <h2 className="lp-h2">Pensado para el momento que importa</h2>
+          <div className="lp-feats" style={{ marginTop: 30 }}>
+            <div className="lp-feat"><div className="ic">🩺</div><h4>Ficha médica completa</h4><p>Sangre, alergias, padecimientos, medicamentos, implantes, hospital y seguro.</p></div>
+            <div className="lp-feat"><div className="ic">📱</div><h4>QR sin apps</h4><p>Cualquiera lo escanea con la cámara del teléfono. No hay que instalar ni registrarse.</p></div>
+            <div className="lp-feat"><div className="ic">🐾</div><h4>Personas y mascotas</h4><p>Un carnet por cada quien, todos en tu misma cuenta. Chip, vacunas y recompensa incluidos.</p></div>
+            <div className="lp-feat"><div className="ic">📍</div><h4>Aviso con ubicación</h4><p>Si encuentran a tu familiar o mascota, te llega dónde están con enlace al mapa.</p></div>
+            <div className="lp-feat"><div className="ic">🖨️</div><h4>Tarjeta imprimible</h4><p>Formato cartera con tu QR para llevar siempre contigo o en el collar.</p></div>
+            <div className="lp-feat"><div className="ic">🔒</div><h4>Privado y tuyo</h4><p>Tú decides qué información es pública. Editas o borras cuando quieras.</p></div>
+          </div>
+        </div>
+      </section>
+
+      {/* CASOS DE USO */}
+      <section className="lp-sec alt">
+        <div className="lp-in">
+          <div className="lp-kicker">Ideal para</div>
+          <h2 className="lp-h2">Cuando más se necesita</h2>
+          <p className="lp-p">Un pequeño detalle que hace enorme diferencia en un accidente, una recaída o un extravío.</p>
+          <div className="lp-uses">
+            <span className="lp-use">🏃 Corredores y ciclistas</span>
+            <span className="lp-use">🧓 Adultos mayores</span>
+            <span className="lp-use">🧒 Niños pequeños</span>
+            <span className="lp-use">🐕 Mascotas que se pierden</span>
+            <span className="lp-use">💊 Condiciones crónicas</span>
+            <span className="lp-use">✈️ Viajeros</span>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="lp-sec">
+        <div className="lp-in">
+          <div className="lp-kicker">Preguntas</div>
+          <h2 className="lp-h2">Lo que la gente pregunta</h2>
+          <div className="lp-faq" style={{ marginTop: 28 }}>
+            <details><summary>¿Quien me encuentra necesita instalar algo?</summary><p>No. Escanea el QR con la cámara del teléfono y se abre tu ficha en el navegador. Cero apps, cero cuentas.</p></details>
+            <details><summary>¿Puedo tener varios carnets?</summary><p>Sí. Con una sola cuenta manejas los carnets de toda tu familia y de tus mascotas, cada uno con su propio QR.</p></details>
+            <details><summary>¿Qué pasa si pierdo el QR impreso?</summary><p>Entras a tu cuenta y lo vuelves a imprimir cuando quieras. Tu información sigue segura y actualizada.</p></details>
+            <details><summary>¿Mis datos son privados?</summary><p>Tú controlas qué se muestra en la ficha pública. Los datos que marques como privados solo los ves tú al entrar.</p></details>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <div className="lp-in">
+        <div className="lp-final">
+          <h2>Protege a quien más quieres</h2>
+          <p>Créalo hoy en un par de minutos. Para ti, tu familia y tus mascotas.</p>
+          <SignUpButton mode="modal"><button className="btn">Crear mi carnet</button></SignUpButton>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <footer className="lp-foot">
+        <div><img src="/icon-192.png" alt="" /> Identy·kit — Tu identidad, segura en un QR</div>
+        <div style={{ marginTop: 8 }}>© {new Date().getFullYear()} · Hecho para cuidarte</div>
+      </footer>
+    </div>
   );
 }
