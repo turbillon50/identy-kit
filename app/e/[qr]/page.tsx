@@ -39,9 +39,21 @@ export default async function Emergencia({ params }: { params: { qr: string } })
     id.sex, id.color,
   ].filter(Boolean).join(" · ");
 
-  // Lo que alguien tiene que saber ANTES de tocar a esta persona
-  const critico = [med.allergies, med.conditions, id.public_note]
-    .filter(Boolean).join(" · ");
+  // Lo que alguien tiene que saber ANTES de tocar a esta persona.
+  // Los tres campos suelen traslaparse — la gente escribe "diabetes" en
+  // padecimientos y otra vez en la nota — así que se quita lo repetido para
+  // que no salga el mismo dato dos veces en la parte que más se mira.
+  const partes: string[] = [];
+  for (const t of [med.allergies, med.conditions, id.public_note]) {
+    const limpio = String(t || "").trim();
+    if (!limpio) continue;
+    const yaEsta = partes.some((p) => {
+      const a = p.toLowerCase(), b = limpio.toLowerCase();
+      return a.includes(b) || b.includes(a);
+    });
+    if (!yaEsta) partes.push(limpio);
+  }
+  const critico = partes.join(" · ");
 
   const hayMedico = med.medications || med.implants || med.insurance ||
     med.preferred_hospital || med.doctor_name || med.dnr;
