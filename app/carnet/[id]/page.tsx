@@ -10,6 +10,8 @@ import ContactsPanel from "./ContactsPanel";
 import QrShare from "./QrShare";
 import AppShell from "../../../components/AppShell";
 
+import { esDueno } from "../../../lib/permisos";
+
 export const dynamic = "force-dynamic";
 
 const EMOJI: Record<string, string> = { person: "🧑", pet: "🐾", other: "📦" };
@@ -49,7 +51,7 @@ export default async function Carnet({ params }: { params: { id: string } }) {
   const esMascota = id.kind === "pet";
 
   return (
-    <AppShell active="carnets" title={id.display_name}>
+    <AppShell esDueno={await esDueno()} active="carnets" title={id.display_name}>
       <Link href="/dashboard" className="sub"
         style={{ display: "inline-block", marginBottom: 14, fontWeight: 600 }}>
         ‹ Mis carnets

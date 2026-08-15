@@ -3,6 +3,8 @@ import { sql } from "../../lib/db";
 import AppShell from "../../components/AppShell";
 import Link from "next/link";
 
+import { esDueno } from "../../lib/permisos";
+
 export const dynamic = "force-dynamic";
 
 export default async function Actividad() {
@@ -12,7 +14,7 @@ export default async function Actividad() {
     where i.owner_clerk_user_id=${userId} order by f.created_at desc limit 60` as any[];
 
   return (
-    <AppShell active="actividad" title="Actividad">
+    <AppShell esDueno={await esDueno()} active="actividad" title="Actividad">
       <div className="h1" style={{fontSize:22}}>Avisos de emergencia</div>
       <div className="sub" style={{marginBottom:18}}>Cada vez que alguien escanea un QR y avisa, aparece aquí.</div>
       {ev.length===0 ? (

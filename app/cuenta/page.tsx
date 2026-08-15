@@ -4,6 +4,8 @@ import { UserButton, SignOutButton } from "@clerk/nextjs";
 import AppShell from "../../components/AppShell";
 import Link from "next/link";
 
+import { esDueno } from "../../lib/permisos";
+
 export const dynamic = "force-dynamic";
 
 export default async function Cuenta() {
@@ -14,7 +16,7 @@ export default async function Cuenta() {
   const nombre = [user?.firstName,user?.lastName].filter(Boolean).join(" ") || "Mi cuenta";
 
   return (
-    <AppShell active="cuenta" title="Cuenta">
+    <AppShell esDueno={await esDueno()} active="cuenta" title="Cuenta">
       <div className="card center" style={{gap:10}}>
         <div style={{transform:"scale(1.5)",margin:"6px 0"}}><UserButton afterSignOutUrl="/"/></div>
         <div className="h1" style={{fontSize:20}}>{nombre}</div>
