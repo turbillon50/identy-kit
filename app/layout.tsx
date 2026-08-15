@@ -6,7 +6,7 @@ export const metadata = {
   title: "Identy-Kit — Identidad de emergencia con QR",
   description: "Un carnet digital con QR para personas, mascotas y más. Datos vitales accesibles en segundos.",
   manifest: "/manifest.json",
-  themeColor: "#ffffff",
+  themeColor: "#032F6E",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Identy-Kit" },
   icons: { icon: "/favicon-32.png", apple: "/icon-192.png" },
 };
@@ -19,20 +19,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       localization={esES}
       appearance={{
         variables: {
-          colorPrimary: "#1e63d0",
-          colorText: "#0e2a5c",
-          colorTextSecondary: "#5b6b84",
+          colorPrimary: "#032F6E",
+          colorText: "#00265E",
+          colorTextSecondary: "#5A6B85",
           borderRadius: "12px",
           fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif",
         },
         elements: {
           formButtonPrimary: { fontSize: "15px", fontWeight: "700", textTransform: "none" },
-          card: { boxShadow: "0 20px 60px rgba(16,24,40,.14)", borderRadius: "20px" },
+          card: { boxShadow: "0 18px 50px rgba(3,47,110,.16)", borderRadius: "20px" },
           headerTitle: { fontWeight: "800", letterSpacing: "-.02em" },
-          logoImage: { width: "44px" },
-          footerActionLink: { color: "#1e63d0", fontWeight: "700" },
+          logoImage: { width: "108px" },
+          footerActionLink: { color: "#032F6E", fontWeight: "700" },
         },
-        layout: { logoImageUrl: "/icon-192.png", logoPlacement: "inside" },
+        layout: { logoImageUrl: "/logo.png", logoPlacement: "inside" },
       }}
     >
       <html lang="es">

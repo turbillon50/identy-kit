@@ -4,69 +4,169 @@ import { sql } from "../../lib/db";
 import AppShell from "../../components/AppShell";
 
 export const dynamic = "force-dynamic";
-const label: Record<string,string> = { person:"Persona", pet:"Mascota", other:"Otro" };
 
-export default async function Dashboard() {
+const TIPO: Record<string, string> = { person: "Persona", pet: "Mascota", other: "Otro" };
+const EMOJI: Record<string, string> = { person: "🧑", pet: "🐾", other: "📦" };
+
+/**
+ * Qué tan útil sería este carnet si alguien lo escaneara ahorita.
+ *
+ * Un carnet a medias da falsa seguridad: el titular cree que está protegido y
+ * quien lo escanee no va a encontrar lo que necesita. Por eso el panel no
+ * felicita por tenerlo creado — avisa de lo que falta.
+ */
+function loQueFalta(i: any, tieneContactos: boolean) {
+  const faltan: string[] = [];
+  if (!tieneContactos) faltan.push("a quién llamar");
+  if (i.kind !== "pet" && !i.blood_type) faltan.push("tipo de sangre");
+  if (!i.alergias_o_condiciones && i.kind !== "pet") faltan.push("alergias o padecimientos");
+  if (i.kind === "pet" && !i.owner_phone) faltan.push("tu teléfono");
+  return faltan;
+}
+
+export default async function Panel() {
   const { userId } = await auth();
   const user = await currentUser();
-  const ids = await sql`select i.*, (select count(*) from found_events f where f.identity_id=i.id) as founds
-    from identities i where owner_clerk_user_id=${userId} order by created_at desc` as any[];
-  const recientes = await sql`select f.*, i.display_name, i.kind from found_events f
-    join identities i on i.id=f.identity_id
-    where i.owner_clerk_user_id=${userId} order by f.created_at desc limit 4` as any[];
 
-  const total = ids.length;
-  const avisos = ids.reduce((a:number,i:any)=>a+Number(i.founds||0),0);
-  const personas = ids.filter((i:any)=>i.kind==="person").length;
-  const mascotas = ids.filter((i:any)=>i.kind==="pet").length;
+  const carnets = await sql`
+    select i.*,
+      (select count(*) from found_events f where f.identity_id = i.id) as escaneos,
+      (select count(*) from emergency_contacts c where c.identity_id = i.id) as contactos,
+      (select coalesce(m.allergies,'') || coalesce(m.conditions,'')
+         from medical_info m where m.identity_id = i.id limit 1) as alergias_o_condiciones
+    from identities i
+    where owner_clerk_user_id = ${userId}
+    order by created_at desc` as any[];
+
+  const recientes = await sql`
+    select f.*, i.display_name, i.kind
+    from found_events f join identities i on i.id = f.identity_id
+    where i.owner_clerk_user_id = ${userId}
+    order by f.created_at desc limit 4` as any[];
+
+  const total = carnets.length;
+  const escaneos = carnets.reduce((a: number, i: any) => a + Number(i.escaneos || 0), 0);
+  const incompletos = carnets.filter(
+    (i: any) => loQueFalta(i, Number(i.contactos) > 0).length > 0).length;
   const nombre = user?.firstName || "";
 
   return (
     <AppShell active="inicio" title="Inicio">
-      <div className="h1" style={{fontSize:24}}>Hola{nombre?`, ${nombre}`:""} 👋</div>
-      <div className="sub" style={{marginBottom:18}}>Este es el estado de tus carnets de emergencia.</div>
-
-      <div className="kpigrid">
-        <div className="kpi"><span className="bar"/><div className="kl">Carnets activos</div><div className="kv">{total}</div><span className="ki"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg></span></div>
-        <div className="kpi"><span className="bar"/><div className="kl">Avisos recibidos</div><div className="kv" style={{color:avisos>0?"var(--danger)":undefined}}>{avisos}</div><span className="ki" style={{background:avisos>0?"#fff1f0":undefined,color:avisos>0?"var(--danger)":undefined}}>🆘</span></div>
-        <div className="kpi"><span className="bar"/><div className="kl">Personas</div><div className="kv">{personas}</div><span className="ki">🧑</span></div>
-        <div className="kpi"><span className="bar"/><div className="kl">Mascotas</div><div className="kv">{mascotas}</div><span className="ki">🐾</span></div>
+      <div className="h1">Hola{nombre ? `, ${nombre}` : ""}</div>
+      <div className="sub" style={{ marginBottom: 20 }}>
+        {total === 0
+          ? "Vamos a crear tu primer carnet."
+          : incompletos > 0
+            ? `Tienes ${incompletos === 1 ? "un carnet" : `${incompletos} carnets`} sin terminar.`
+            : "Tus carnets están completos."}
       </div>
 
-      <div className="seclabel">Tus carnets<Link href="/admin">Administrar</Link></div>
-      {total === 0 ? (
-        <div className="card empty">
-          <div style={{ fontSize: 42 }}>🪪</div>
-          <b style={{ display: "block", marginTop: 8, color: "var(--ink)" }}>Crea tu primer carnet</b>
-          <div style={{ marginTop: 4 }}>Toca el botón azul de abajo para empezar.</div>
+      {total > 0 && (
+        <div className="kpigrid">
+          <div className="kpi">
+            <div className="n">{total}</div>
+            <div className="l">{total === 1 ? "Carnet" : "Carnets"}</div>
+          </div>
+          <div className="kpi">
+            <div className="n" style={{ color: escaneos > 0 ? "var(--alta)" : undefined }}>
+              {escaneos}
+            </div>
+            <div className="l">{escaneos === 1 ? "Escaneo" : "Escaneos"}</div>
+          </div>
         </div>
-      ) : ids.map((i:any) => (
-        <Link key={i.id} href={`/carnet/${i.id}`} className="idcard">
-          <div className="avatar">{i.photo_url ? <img src={i.photo_url} alt=""/> : (i.kind==="pet"?"🐾":i.kind==="other"?"📦":"🧑")}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>{i.display_name}</div>
-            <div className="row" style={{ gap: 6, marginTop: 3 }}>
-              <span className={`pill ${i.kind}`}>{label[i.kind]}</span>
-              {i.blood_type && <span className="pill">🩸 {i.blood_type}</span>}
-              {Number(i.founds)>0 && <span className="pill" style={{ background:"#fff1f0", color:"var(--danger)" }}>🆘 {i.founds}</span>}
-            </div>
-          </div>
-          <span style={{ color: "var(--muted)", fontSize: 22 }}>›</span>
-        </Link>
-      ))}
+      )}
 
-      {recientes.length>0 && (<>
-        <div className="seclabel">Actividad reciente<Link href="/actividad">Ver todo</Link></div>
-        {recientes.map((f:any)=>(
-          <div key={f.id} className="acti">
-            <div className="ic">🆘</div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontWeight:700,fontSize:14.5,color:"var(--brand-ink)"}}>Escanearon el carnet de {f.display_name}</div>
-              <div className="sub" style={{marginTop:2}}>{new Date(f.created_at).toLocaleString("es-MX")}{f.finder_note?` · "${f.finder_note}"`:""}</div>
-              {f.lat && <a target="_blank" href={`https://maps.google.com/?q=${f.lat},${f.lng}`} style={{color:"var(--accent)",fontWeight:700,fontSize:13}}>Ver ubicación en mapa</a>}
-            </div>
+      <h3>{total === 0 ? "Empieza aquí" : "Tus carnets"}</h3>
+
+      {total === 0 ? (
+        <div className="empty">
+          <div style={{ fontSize: 40, marginBottom: 10 }}>🪪</div>
+          <b style={{ display: "block", fontSize: 16, color: "var(--tinta)" }}>
+            Todavía no tienes ningún carnet
+          </b>
+          <div style={{ marginTop: 6, fontSize: 14, lineHeight: 1.55 }}>
+            Toca el botón azul de abajo. Se hace en cinco minutos y te va a pedir
+            solo lo que de verdad sirve en una emergencia.
           </div>
-        ))}
+        </div>
+      ) : (
+        <div className="grid">
+          {carnets.map((i: any) => {
+            const faltan = loQueFalta(i, Number(i.contactos) > 0);
+            const listo = faltan.length === 0;
+            return (
+              <Link key={i.id} href={`/carnet/${i.id}`} className="idcard">
+                <div className="avatar">
+                  {i.photo_url
+                    ? <img src={i.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 15 }} />
+                    : EMOJI[i.kind] || "🧑"}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: "-.015em" }}>
+                    {i.display_name}
+                  </div>
+                  <div className="row" style={{ gap: 6, marginTop: 5, flexWrap: "wrap" }}>
+                    <span className="pill">{TIPO[i.kind]}</span>
+                    {i.blood_type && <span className="pill alta">{i.blood_type}</span>}
+                    {Number(i.escaneos) > 0 && (
+                      <span className="pill ambar">
+                        {i.escaneos} {Number(i.escaneos) === 1 ? "escaneo" : "escaneos"}
+                      </span>
+                    )}
+                    {!i.is_active && <span className="pill">Apagado</span>}
+                  </div>
+                  {!listo && (
+                    <div style={{ fontSize: 12.5, color: "var(--ambar)", marginTop: 7,
+                      fontWeight: 600, lineHeight: 1.45 }}>
+                      Falta {faltan.join(", ")}
+                    </div>
+                  )}
+                </div>
+                <span style={{ color: "var(--gris-claro)", fontSize: 21, flexShrink: 0 }}>›</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {recientes.length > 0 && (<>
+        <h3>Quién ha escaneado</h3>
+        <div className="card">
+          {recientes.map((f: any) => (
+            <div key={f.id} className="acti">
+              <div className="ic">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                  <path d="M14 14h3v3M20 20h.01M17 20h.01M20 17h.01" />
+                </svg>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 14.5 }}>
+                  Escanearon el carnet de {f.display_name}
+                </div>
+                <div className="sub" style={{ fontSize: 13, marginTop: 2 }}>
+                  {new Date(f.created_at).toLocaleString("es-MX", {
+                    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  {f.finder_note ? ` · "${f.finder_note}"` : ""}
+                </div>
+                {f.lat && (
+                  <a target="_blank" rel="noreferrer"
+                    href={`https://maps.google.com/?q=${f.lat},${f.lng}`}
+                    style={{ color: "var(--marco)", fontWeight: 700, fontSize: 13,
+                      display: "inline-block", marginTop: 3 }}>
+                    Ver dónde fue
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        <Link href="/actividad" className="btn ghost" style={{ marginTop: 12 }}>
+          Ver todo el historial
+        </Link>
       </>)}
     </AppShell>
   );

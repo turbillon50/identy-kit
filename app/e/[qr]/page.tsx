@@ -5,92 +5,171 @@ import FoundActions from "./FoundActions";
 
 export const dynamic = "force-dynamic";
 
-export default async function Emergency({ params }: { params: { qr: string } }) {
-  const rows = await sql`select * from identities where qr_token=${params.qr} and is_active=true` as any[];
-  if (!rows.length) notFound();
-  const id = rows[0];
-  const med = (await sql`select * from medical_info where identity_id=${id.id} limit 1` as any[])[0] || {};
-  const contacts = await sql`select * from emergency_contacts where identity_id=${id.id} order by is_primary desc, created_at` as any[];
-  const isPet = id.kind === "pet";
-  const age = ageFrom(id.birth_date);
-  const emoji = isPet ? "🐾" : id.kind === "other" ? "📦" : "🧑";
-  const meta = [isPet ? id.breed || id.species : (age || null), id.sex, id.color].filter(Boolean).join(" · ");
-  const critical = [id.public_note, med.conditions].filter(Boolean).join(" — ");
+/**
+ * La ficha de emergencia — el corazón del producto.
+ *
+ * Quien llega aquí no es el titular: es un desconocido que acaba de escanear
+ * un QR, o un paramédico con prisa. Puede estar nervioso, con las manos
+ * temblando, con mala luz.
+ *
+ * Por eso esta pantalla rompe con el resto de la app: no lleva menú, no lleva
+ * marca arriba compitiendo por atención, y no esconde nada detrás de un toque.
+ * Lo que puede salvar una vida va primero y va grande: tipo de sangre,
+ * alergias, y a quién llamar.
+ */
+
+const SIN_FOTO: Record<string, string> = { pet: "🐾", other: "📦", person: "🧑" };
+
+export default async function Emergencia({ params }: { params: { qr: string } }) {
+  const filas = await sql`
+    select * from identities where qr_token=${params.qr} and is_active=true` as any[];
+  if (!filas.length) notFound();
+
+  const id = filas[0];
+  const med = (await sql`
+    select * from medical_info where identity_id=${id.id} limit 1` as any[])[0] || {};
+  const contactos = await sql`
+    select * from emergency_contacts where identity_id=${id.id}
+    order by is_primary desc, created_at` as any[];
+
+  const esMascota = id.kind === "pet";
+  const edad = ageFrom(id.birth_date);
+  const meta = [
+    esMascota ? id.breed || id.species : edad,
+    id.sex, id.color,
+  ].filter(Boolean).join(" · ");
+
+  // Lo que alguien tiene que saber ANTES de tocar a esta persona
+  const critico = [med.allergies, med.conditions, id.public_note]
+    .filter(Boolean).join(" · ");
+
+  const hayMedico = med.medications || med.implants || med.insurance ||
+    med.preferred_hospital || med.doctor_name || med.dnr;
 
   return (
-    <div className="wrap" style={{ paddingTop: 14 }}>
-      <div className="ehero">
-        <div className="band"><span>🚨</span> FICHA DE EMERGENCIA{isPet ? " · MASCOTA" : ""}</div>
-        <div className="body">
-          <div className="row" style={{ alignItems: "flex-start" }}>
-            {id.photo_url
-              ? <img className="ephoto" src={id.photo_url} alt="" />
-              : <div className="ephoto">{emoji}</div>}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="ename">{id.display_name}</div>
-              {meta && <div className="sub" style={{ marginTop: 2 }}>{meta}</div>}
-              <div className="row" style={{ flexWrap: "wrap", gap: 6, marginTop: 10 }}>
-                {id.blood_type && <span className="tag red">🩸 {id.blood_type}</span>}
-                {id.organ_donor && <span className="tag teal">💚 Donante</span>}
-                {med.allergies && <span className="tag amber">⚠️ Alergias</span>}
-              </div>
-            </div>
+    <div className="e-wrap">
+      <div className={`e-banda${esMascota ? " mascota" : ""}`}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {esMascota
+            ? <><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/>
+                <circle cx="20" cy="16" r="2"/><circle cx="9" cy="17" r="4"/></>
+            : <><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M12 8v6M9 11h6"/></>}
+        </svg>
+        {esMascota ? "Mascota perdida" : "Ficha de emergencia"}
+      </div>
+
+      {/* Quién es */}
+      <div className="e-cabeza">
+        <div className="row" style={{ alignItems: "flex-start", gap: 15 }}>
+          {id.photo_url
+            ? <img className="e-foto" src={id.photo_url} alt="" />
+            : <div className="e-foto">{SIN_FOTO[id.kind] || "🧑"}</div>}
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="e-nombre">{id.display_name}</div>
+            {meta && <div className="e-meta">{meta}</div>}
+            {id.organ_donor && (
+              <span className="pill ok" style={{ marginTop: 9 }}>Donante de órganos</span>
+            )}
           </div>
+
+          {/* Lo primero que pregunta un paramédico */}
+          {id.blood_type && (
+            <div className="e-sangre">
+              <span className="n">{id.blood_type}</span>
+              <span className="t">Sangre</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {critical && (
-        <div className="alertbox" style={{ marginTop: 14 }}>
-          <b>⚠️ Atención</b>
-          <div style={{ marginTop: 4, fontWeight: 600 }}>{critical}</div>
+      {/* Lo que puede matar a alguien si no se sabe */}
+      {critico && (
+        <div className="e-critico">
+          <div className="t">Antes de atender</div>
+          <div className="c">{critico}</div>
         </div>
       )}
 
-      <h3 style={{ marginTop: 20 }}>{isPet ? "Contactar al dueño" : "Llamar en emergencia"}</h3>
-      <div>
-        {contacts.map((c: any) => (
-          <a key={c.id} href={`tel:${c.phone}`} className="callbtn">
-            <span>
-              <span style={{ display: "block", fontSize: 16 }}>{c.name}</span>
-              <span style={{ opacity: .85, fontWeight: 600, fontSize: 13 }}>{c.relationship || "Contacto"}</span>
-            </span>
-            <span>📞 Llamar</span>
-          </a>
-        ))}
-        <a href="tel:911" className="callbtn call911">
-          <span><span style={{ display: "block", fontSize: 16 }}>Emergencias 911</span>
-          <span style={{ opacity: .85, fontWeight: 600, fontSize: 13 }}>Servicios de emergencia</span></span>
-          <span>📞 911</span>
+      {/* A quién llamar — botones grandes, para pulgares nerviosos */}
+      <h3>{esMascota ? "Avisar a su familia" : "Llamar ahora"}</h3>
+      {contactos.map((c: any) => (
+        <a key={c.id} href={`tel:${c.phone}`} className="e-llamar">
+          <span>
+            <span className="quien">{c.name}</span>
+            <span className="rel">{c.relationship || "Contacto"} · {c.phone}</span>
+          </span>
+          <span className="accion">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.4 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.4 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>
+            </svg>
+            Llamar
+          </span>
         </a>
+      ))}
+
+      {!esMascota && (
+        <a href="tel:911" className="e-llamar emergencias">
+          <span>
+            <span className="quien">Emergencias 911</span>
+            <span className="rel">Ambulancia, bomberos, policía</span>
+          </span>
+          <span className="accion">911</span>
+        </a>
+      )}
+
+      {/* El detalle, para quien tenga tiempo de leerlo */}
+      {hayMedico && (<>
+        <h3>Información médica</h3>
+        <div className="card">
+          {med.medications && (
+            <div className="kv"><span className="k">Medicamentos</span>
+              <span className="v">{med.medications}</span></div>)}
+          {med.implants && (
+            <div className="kv"><span className="k">Implantes o aparatos</span>
+              <span className="v">{med.implants}</span></div>)}
+          {id.weight && (
+            <div className="kv"><span className="k">Peso</span>
+              <span className="v">{id.weight}</span></div>)}
+          {med.preferred_hospital && (
+            <div className="kv"><span className="k">Hospital</span>
+              <span className="v">{med.preferred_hospital}</span></div>)}
+          {med.doctor_name && (
+            <div className="kv"><span className="k">{esMascota ? "Veterinario" : "Médico"}</span>
+              <span className="v">{med.doctor_name}
+                {med.doctor_phone ? ` · ${med.doctor_phone}` : ""}</span></div>)}
+          {med.insurance && (
+            <div className="kv"><span className="k">Seguro</span>
+              <span className="v">{med.insurance}</span></div>)}
+          {med.dnr && (
+            <div className="kv"><span className="k">Voluntad anticipada</span>
+              <span className="v" style={{ color: "var(--alta)" }}>No reanimar</span></div>)}
+        </div>
+      </>)}
+
+      {esMascota && (id.microchip || med.vaccinations || id.reward_note) && (<>
+        <h3>Datos de la mascota</h3>
+        <div className="card">
+          {id.microchip && (
+            <div className="kv"><span className="k">Microchip</span>
+              <span className="v">{id.microchip}</span></div>)}
+          {med.vaccinations && (
+            <div className="kv"><span className="k">Vacunas</span>
+              <span className="v">{med.vaccinations}</span></div>)}
+          {id.reward_note && (
+            <div className="kv"><span className="k">Recompensa</span>
+              <span className="v" style={{ color: "var(--ok)" }}>{id.reward_note}</span></div>)}
+        </div>
+      </>)}
+
+      <FoundActions qr={id.qr_token} name={id.display_name} isPet={esMascota} />
+
+      <div className="e-pie">
+        <img src="/icon-192.png" width={19} height={19} alt="" style={{ borderRadius: 5 }} />
+        Protegido con Identy-Kit
       </div>
-
-      {(med.allergies || med.conditions || med.medications || med.implants || med.insurance || med.preferred_hospital || med.doctor_name) && <>
-        <h3 style={{ marginTop: 20 }}>Información médica</h3>
-        <div className="card">
-          {med.allergies && <div className="kv"><span className="k">Alergias</span><span className="v" style={{color:"var(--danger)"}}>{med.allergies}</span></div>}
-          {med.conditions && <div className="kv"><span className="k">Padecimientos</span><span className="v">{med.conditions}</span></div>}
-          {med.medications && <div className="kv"><span className="k">Medicamentos</span><span className="v">{med.medications}</span></div>}
-          {med.implants && <div className="kv"><span className="k">Implantes/aparatos</span><span className="v">{med.implants}</span></div>}
-          {id.weight && <div className="kv"><span className="k">Peso</span><span className="v">{id.weight}</span></div>}
-          {med.insurance && <div className="kv"><span className="k">Seguro</span><span className="v">{med.insurance}</span></div>}
-          {med.preferred_hospital && <div className="kv"><span className="k">Hospital</span><span className="v">{med.preferred_hospital}</span></div>}
-          {med.doctor_name && <div className="kv"><span className="k">{isPet?"Veterinario":"Médico"}</span><span className="v">{med.doctor_name}{med.doctor_phone?` · ${med.doctor_phone}`:""}</span></div>}
-          {med.dnr && <div className="kv"><span className="k">Voluntad</span><span className="v" style={{color:"var(--danger)"}}>No reanimar (DNR)</span></div>}
-        </div>
-      </>}
-
-      {isPet && (id.microchip || id.vaccinations || id.reward_note) && <>
-        <h3 style={{ marginTop: 20 }}>Datos de la mascota</h3>
-        <div className="card">
-          {id.microchip && <div className="kv"><span className="k">Microchip</span><span className="v">{id.microchip}</span></div>}
-          {med.vaccinations && <div className="kv"><span className="k">Vacunas</span><span className="v">{med.vaccinations}</span></div>}
-          {id.reward_note && <div className="kv"><span className="k">Recompensa</span><span className="v" style={{color:"var(--brand-ink)"}}>{id.reward_note}</span></div>}
-        </div>
-      </>}
-
-      <FoundActions qr={id.qr_token} name={id.display_name} isPet={isPet} />
-
-      <div className="foot"><img src="/icon-192.png" width={20} height={20} alt="" /> Protegido con Identy-Kit</div>
     </div>
   );
 }
