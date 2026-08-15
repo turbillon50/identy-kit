@@ -75,9 +75,8 @@ export default async function PanelDueno() {
   const quien = (id: string) => nombres[id] || id.slice(0, 14) + "…";
 
   return (
-    <div className="wrap" style={{ paddingTop: 18, paddingBottom: 60 }}>
-      <div className="row" style={{ justifyContent: "space-between",
-        alignItems: "flex-start", marginBottom: 20 }}>
+    <div className="adm">
+      <div className="adm-top">
         <div>
           <div className="h1">Plataforma</div>
           <div className="sub">Todo Identy-Kit, en un lugar.</div>
@@ -85,7 +84,7 @@ export default async function PanelDueno() {
         <Salir />
       </div>
 
-      <div className="kpigrid">
+      <div className="adm-kpis">
         <div className="kpi">
           <div className="n">{k.titulares}</div>
           <div className="l">{Number(k.titulares) === 1 ? "Titular" : "Titulares"}</div>
@@ -108,32 +107,18 @@ export default async function PanelDueno() {
         </div>
       </div>
 
-      {(Number(k.nuevos_semana) > 0 || Number(k.escaneos_semana) > 0) && (
-        <div className="card" style={{ marginTop: 12 }}>
-          <div className="kv">
-            <span className="k">Carnets nuevos esta semana</span>
-            <span className="v">{k.nuevos_semana}</span>
-          </div>
-          <div className="kv">
-            <span className="k">Escaneos esta semana</span>
-            <span className="v">{k.escaneos_semana}</span>
-          </div>
-          <div className="kv">
-            <span className="k">Personas / mascotas</span>
-            <span className="v">{k.personas} · {k.mascotas}</span>
-          </div>
-        </div>
-      )}
+      <div className="adm-cols">
+        <div className="adm-bloque">
 
-      {/* Lo que de verdad hay que atender */}
-      {aMedias.length > 0 && (<>
+      {/* Lo que de verdad hay que atender va primero y en la columna ancha */}
+      {aMedias.length > 0 ? (<>
         <h3>Carnets que no servirían</h3>
-        <div className="alertbox" style={{ marginBottom: 12 }}>
+        <div className="alertbox" style={{ marginBottom: 13 }}>
           Estos están activos pero <b>no tienen a quién llamar</b>. Si alguien los
           escanea, no va a encontrar un teléfono. Es lo primero que hay que
           resolverle a esa gente.
         </div>
-        <div className="grid">
+        <div className="adm-riesgo">
           {aMedias.map((i: any) => (
             <div key={i.id} className="idcard">
               <div className="avatar" style={{ background: "var(--ambar-fondo)",
@@ -153,7 +138,38 @@ export default async function PanelDueno() {
             </div>
           ))}
         </div>
-      </>)}
+      </>) : (
+        <>
+          <h3>Estado de los carnets</h3>
+          <div className="card" style={{ borderLeft: "4px solid var(--ok)" }}>
+            <b style={{ fontSize: 15.5 }}>Todos tienen a quién llamar</b>
+            <div className="sub" style={{ marginTop: 5, lineHeight: 1.55 }}>
+              Ningún carnet activo está sin contactos de emergencia. Si eso
+              cambia, aparece aquí arriba.
+            </div>
+          </div>
+        </>
+      )}
+
+      <h3>Esta semana</h3>
+      <div className="card">
+        <div className="kv">
+          <span className="k">Carnets nuevos</span>
+          <span className="v">{k.nuevos_semana}</span>
+        </div>
+        <div className="kv">
+          <span className="k">Escaneos</span>
+          <span className="v">{k.escaneos_semana}</span>
+        </div>
+        <div className="kv">
+          <span className="k">Personas / mascotas</span>
+          <span className="v">{k.personas} · {k.mascotas}</span>
+        </div>
+        <div className="kv">
+          <span className="k">Carnets apagados</span>
+          <span className="v">{Number(k.carnets) - Number(k.activos)}</span>
+        </div>
+      </div>
 
       <h3>Titulares</h3>
       <div className="card">
@@ -169,7 +185,10 @@ export default async function PanelDueno() {
         ))}
       </div>
 
-      <h3>Escaneos recientes</h3>
+        </div>
+
+        <div className="adm-bloque adm-lateral">
+      <h3 style={{ marginTop: 0 }}>Escaneos recientes</h3>
       {escaneos.length === 0 ? (
         <div className="empty">
           <b style={{ display: "block", color: "var(--tinta)" }}>Nadie ha escaneado todavía</b>
@@ -213,6 +232,9 @@ export default async function PanelDueno() {
           ))}
         </div>
       )}
+
+        </div>
+      </div>
 
       <div style={{ marginTop: 26, padding: "14px 16px", borderRadius: 13,
         background: "var(--pulso-claro)", fontSize: 13, color: "var(--marco)",

@@ -424,3 +424,63 @@ select.input{appearance:none;
   --shadow:var(--sombra);
   --shadow-lg:var(--sombra-alta);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PANTALLA GRANDE
+   La app se diseñó para el teléfono, y está bien: ahí se escanea
+   y ahí se llena el carnet. Pero la administración se abre en
+   computadora, y ahí una tira angosta al centro desperdicia
+   toda la pantalla y obliga a bajar por todo.
+   ═══════════════════════════════════════════════════════════════ */
+
+.adm{max-width:1180px;margin:0 auto;padding:26px 26px 70px}
+
+.adm-top{display:flex;align-items:flex-start;justify-content:space-between;
+  gap:20px;margin-bottom:26px;padding-bottom:22px;
+  border-bottom:1px solid var(--linea)}
+.adm-top .h1{font-size:32px}
+
+/* Los números, en fila cuando hay espacio */
+.adm-kpis{display:grid;gap:14px;grid-template-columns:repeat(2,1fr)}
+@media (min-width:760px){.adm-kpis{grid-template-columns:repeat(4,1fr)}}
+
+/* Dos columnas: lo que hay que atender pesa más que el detalle */
+.adm-cols{display:grid;gap:22px;margin-top:26px}
+@media (min-width:900px){
+  .adm-cols{grid-template-columns:1.35fr 1fr;align-items:start}
+}
+
+.adm-bloque{min-width:0}
+.adm-bloque h3{margin-top:0}
+
+/* Los carnets en riesgo, en rejilla si caben */
+.adm-riesgo{display:grid;gap:11px}
+@media (min-width:620px){.adm-riesgo{grid-template-columns:1fr 1fr}}
+@media (min-width:900px){.adm-riesgo{grid-template-columns:1fr}}
+@media (min-width:1100px){.adm-riesgo{grid-template-columns:1fr 1fr}}
+
+/* En pantalla grande el panel respira más */
+@media (min-width:900px){
+  .adm .card{padding:20px 22px}
+  .adm .kpi{padding:19px 21px}
+  .adm .kpi .n{font-size:34px}
+}
+
+/* La lista de escaneos se queda pegada al bajar, para no perderla */
+@media (min-width:900px){
+  .adm-lateral{position:sticky;top:26px}
+}
+
+/* La app del titular: en computadora caben dos columnas de carnets */
+@media (min-width:820px){
+  .app-in{max-width:920px;padding:24px 26px 60px}
+  .app-in .kpigrid{grid-template-columns:repeat(4,1fr)}
+  .app-in .grid{grid-template-columns:1fr 1fr}
+  .wrap{max-width:680px}
+  .tabbar{display:none}
+  .app-in{padding-bottom:40px}
+  .fab{bottom:28px}
+}
+
+/* La ficha de emergencia se queda angosta a propósito: se lee de un
+   vistazo, y en pantalla ancha los renglones largos se leen peor */
