@@ -26,3 +26,10 @@ por bueno.
 
 Sans geométrica de peso alto, con el punto medio (·) en cian entre "Identy" y "kit".
 Bajada: TU IDENTIDAD, SEGURA EN UN QR — en versalitas espaciadas.
+
+## Nota técnica de la base
+
+Las llaves del sistema son UUID, no texto. Al agregar columnas que apunten a
+`identities.id` hay que declararlas `uuid`: una columna `text` compila pero
+truena en tiempo de ejecución con "operator does not exist: uuid = text",
+y solo se descubre cuando alguien usa esa pantalla.
