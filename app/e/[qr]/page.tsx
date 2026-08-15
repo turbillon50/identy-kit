@@ -31,6 +31,12 @@ export default async function Emergencia({ params }: { params: { qr: string } })
   const contactos = await sql`
     select * from emergency_contacts where identity_id=${id.id}
     order by is_primary desc, created_at` as any[];
+  // Solo los papeles que el titular marcó para que se vean aquí: su póliza
+  // del seguro sí conviene que la abra un hospital, su identificación no.
+  const papeles = await sql`
+    select id, title, doc_type, file_url from documents
+    where identity_id=${id.id} and visible_en_emergencia
+    order by created_at` as any[];
 
   const esMascota = id.kind === "pet";
   const edad = ageFrom(id.birth_date);
@@ -194,6 +200,27 @@ export default async function Emergencia({ params }: { params: { qr: string } })
           {id.reward_note && (
             <div className="kv"><span className="k">Recompensa</span>
               <span className="v" style={{ color: "var(--ok)" }}>{id.reward_note}</span></div>)}
+        </div>
+      </>)}
+
+      {papeles.length > 0 && (<>
+        <h3>Documentos</h3>
+        <div className="card">
+          {papeles.map((d: any, i: number) => (
+            <a key={d.id} href={d.file_url} target="_blank" rel="noreferrer"
+              className="row" style={{ gap: 12, padding: "12px 0",
+                borderBottom: i < papeles.length - 1 ? "1px solid var(--linea-suave)" : "none" }}>
+              <div style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0,
+                background: "var(--pulso-claro)", display: "flex", alignItems: "center",
+                justifyContent: "center", fontSize: 17 }}>
+                {d.doc_type === "seguro" ? "🛡️" : d.doc_type === "receta" ? "💊"
+                  : d.doc_type === "vacunas" ? "💉" : "📄"}
+              </div>
+              <span style={{ flex: 1, fontSize: 14.5, fontWeight: 700,
+                color: "var(--tinta)" }}>{d.title}</span>
+              <span style={{ color: "var(--gris-claro)", fontSize: 19 }}>›</span>
+            </a>
+          ))}
         </div>
       </>)}
 

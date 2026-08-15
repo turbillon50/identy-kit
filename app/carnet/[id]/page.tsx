@@ -8,6 +8,8 @@ import IdentityForm from "./IdentityForm";
 import MedicalForm from "./MedicalForm";
 import ContactsPanel from "./ContactsPanel";
 import QrShare from "./QrShare";
+import BotonAuxilio from "./BotonAuxilio";
+import Documentos from "./Documentos";
 import AppShell from "../../../components/AppShell";
 
 
@@ -41,6 +43,12 @@ export default async function Carnet({ params }: { params: { id: string } }) {
   const escaneos = await sql`
     select * from found_events where identity_id=${id.id}
     order by created_at desc limit 5` as any[];
+  const docs = await sql`
+    select * from documents where identity_id=${id.id}
+    order by created_at desc` as any[];
+  const auxilios = await sql`
+    select * from sos_events where identity_id=${id.id}
+    order by triggered_at desc limit 3` as any[];
 
   const base = process.env.NEXT_PUBLIC_APP_URL || "https://identykit.xyz";
   const url = `${base}/e/${id.qr_token}`;
@@ -55,6 +63,19 @@ export default async function Carnet({ params }: { params: { id: string } }) {
         style={{ display: "inline-block", marginBottom: 14, fontWeight: 600 }}>
         ‹ Mis carnets
       </Link>
+
+      {/* Un auxilio abierto es lo más urgente que puede haber en esta pantalla */}
+      {auxilios.filter((a: any) => !a.cerrado_at).map((a: any) => (
+        <div key={a.id} className="e-critico" style={{ marginBottom: 14 }}>
+          <div className="t">Pediste ayuda</div>
+          <div className="c" style={{ fontSize: 14.5 }}>
+            {new Date(a.triggered_at).toLocaleString("es-MX", {
+              day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+            {a.avisados > 0 ? " · ya se avisó" : " · no se pudo avisar por correo"}
+            {a.mensaje ? ` · "${a.mensaje}"` : ""}
+          </div>
+        </div>
+      ))}
 
       {/* Si alguien lo escaneó, es lo primero que quiere saber el titular */}
       {escaneos.length > 0 && (
@@ -76,6 +97,13 @@ export default async function Carnet({ params }: { params: { id: string } }) {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Si lo necesitas no vas a bajar a buscarlo: va hasta arriba */}
+      {!esMascota && (
+        <div style={{ marginBottom: 16 }}>
+          <BotonAuxilio carnetId={id.id} nombre={id.display_name} />
         </div>
       )}
 
@@ -147,6 +175,9 @@ export default async function Carnet({ params }: { params: { id: string } }) {
 
       <h3>Contactos de emergencia</h3>
       <ContactsPanel identityId={id.id} initial={contactos} />
+
+      <h3>Documentos</h3>
+      <Documentos carnetId={id.id} inicial={docs} esMascota={esMascota} />
 
       <h3>Ficha médica</h3>
       <MedicalForm identityId={id.id} initial={med} isPet={esMascota} />
