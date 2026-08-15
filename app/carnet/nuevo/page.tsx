@@ -3,35 +3,105 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+const SANGRE = ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"];
+
+/**
+ * Crear un carnet.
+ *
+ * Antes pedía seis campos de entrada, incluida la CURP y la fecha de
+ * nacimiento, antes de dejarte ver nada. Eso hace que la gente abandone en la
+ * primera pantalla.
+ *
+ * Ahora solo pide lo mínimo para que el carnet exista. Lo demás se llena en el
+ * carnet mismo, que ya va diciendo qué falta y por qué importa.
+ */
 export default function Nuevo() {
   const r = useRouter();
-  const [f, setF] = useState({ kind:"person", display_name:"", species:"", birth_date:"", blood_type:"", national_id:"", public_note:"" });
-  const [loading, setLoading] = useState(false);
-  const up = (k:string,v:string)=>setF(s=>({...s,[k]:v}));
-  const save = async () => {
-    if(!f.display_name.trim()) return alert("Ponle un nombre al carnet");
-    setLoading(true);
-    const res = await fetch("/api/identities",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(f)});
-    const d = await res.json();
-    if(d.id) r.push(`/carnet/${d.id}`); else { setLoading(false); alert("Error al guardar"); }
+  const [tipo, setTipo] = useState("person");
+  const [nombre, setNombre] = useState("");
+  const [sangre, setSangre] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+
+  const crear = async () => {
+    if (!nombre.trim()) { setError("Ponle un nombre para reconocerlo"); return; }
+    setGuardando(true); setError("");
+    try {
+      const res = await fetch("/api/identities", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: tipo, display_name: nombre.trim(),
+          blood_type: tipo === "person" ? sangre || null : null,
+        }),
+      });
+      const d = await res.json();
+      if (!d.id) throw new Error(d.error || "No se pudo crear");
+      r.push(`/carnet/${d.id}`);
+    } catch (e: any) {
+      setError(e.message || "No se pudo crear. Intenta de nuevo.");
+      setGuardando(false);
+    }
   };
+
   return (
-    <div className="wrap">
-      <div className="top"><Link href="/dashboard" className="sub">‹ Cancelar</Link><b>Nuevo carnet</b><span/></div>
+    <div className="wrap" style={{ paddingTop: 16 }}>
+      <div className="top">
+        <Link href="/dashboard" className="sub" style={{ fontWeight: 600 }}>‹ Cancelar</Link>
+        <b style={{ fontSize: 16 }}>Nuevo carnet</b>
+        <span />
+      </div>
+
       <div className="card">
-        <div className="field"><div className="label">Tipo</div>
-          <select className="input" value={f.kind} onChange={e=>up("kind",e.target.value)}>
-            <option value="person">Persona</option>
-            <option value="pet">Mascota</option>
-            <option value="other">Otro</option>
-          </select>
+        <div className="label">¿Para quién es?</div>
+        <div className="typegrid">
+          {[["person", "🧑", "Persona"], ["pet", "🐾", "Mascota"],
+            ["other", "📦", "Otro"]].map(([v, e, t]) => (
+            <button key={v} type="button"
+              className={`typeopt${tipo === v ? " on" : ""}`}
+              onClick={() => setTipo(v)}>
+              <div style={{ fontSize: 22, marginBottom: 4 }}>{e}</div>
+              {t}
+            </button>
+          ))}
         </div>
-        <div className="field"><div className="label">Nombre</div><input className="input" value={f.display_name} onChange={e=>up("display_name",e.target.value)} placeholder={f.kind==="pet"?"Nombre de la mascota":"Nombre completo"}/></div>
-        {f.kind==="pet" && <div className="field"><div className="label">Especie / raza</div><input className="input" value={f.species} onChange={e=>up("species",e.target.value)} placeholder="Perro, Labrador"/></div>}
-        <div className="field"><div className="label">Fecha de nacimiento</div><input className="input" type="date" value={f.birth_date} onChange={e=>up("birth_date",e.target.value)}/></div>
-        <div className="field"><div className="label">Tipo de sangre</div><input className="input" value={f.blood_type} onChange={e=>up("blood_type",e.target.value)} placeholder="O+"/></div>
-        <div className="field"><div className="label">Nota pública (visible en emergencia)</div><textarea className="input" rows={2} value={f.public_note} onChange={e=>up("public_note",e.target.value)} placeholder="Ej: diabético, no mover el cuello"/></div>
-        <button className="btn" onClick={save} disabled={loading}>{loading?"Guardando…":"Crear carnet"}</button>
+
+        <div className="field">
+          <label className="label" htmlFor="nombre">
+            {tipo === "pet" ? "¿Cómo se llama?" : "Nombre completo"}
+          </label>
+          <input id="nombre" className="input" value={nombre} autoFocus
+            onChange={(e) => { setNombre(e.target.value); setError(""); }}
+            onKeyDown={(e) => e.key === "Enter" && crear()}
+            placeholder={tipo === "pet" ? "Firulais" : "María Fernanda López"} />
+        </div>
+
+        {tipo === "person" && (
+          <div className="field">
+            <div className="label">Tipo de sangre <span
+              style={{ fontWeight: 500, color: "var(--gris-claro)" }}>· si lo sabes</span></div>
+            <div className="blood">
+              {SANGRE.map((s) => (
+                <button key={s} type="button"
+                  className={sangre === s ? "on" : ""}
+                  onClick={() => setSangre(sangre === s ? "" : s)}>{s}</button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div style={{ color: "var(--alta)", fontSize: 13.5, fontWeight: 600,
+            marginBottom: 11 }}>{error}</div>
+        )}
+
+        <button className="btn" onClick={crear} disabled={guardando}>
+          {guardando ? "Creando…" : "Crear carnet"}
+        </button>
+
+        <p className="sub" style={{ fontSize: 13, marginTop: 12, marginBottom: 0,
+          lineHeight: 1.5, textAlign: "center" }}>
+          Enseguida te vamos guiando con lo que falta.
+        </p>
       </div>
     </div>
   );

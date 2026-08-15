@@ -402,3 +402,25 @@ select.input{appearance:none;
   .wrap{padding:0;max-width:none}
   .p-titulo{display:block !important;color:#666}
 }
+
+/* Nombres de color de la versión anterior, apuntados a la paleta del logo.
+   Varias pantallas los seguían usando y salían con el color por defecto. */
+:root{
+  --brand:var(--marco);
+  --brand-2:var(--pulso);
+  --brand-ink:var(--tinta);
+  --brand-soft:var(--pulso-claro);
+  --accent:var(--pulso);
+  --ink:var(--tinta);
+  --muted:var(--gris);
+  --line:var(--linea);
+  --bg:var(--papel);
+  --card:var(--tarjeta);
+  --danger:var(--alta);
+  --danger-bg:var(--alta-fondo);
+  --warn:var(--ambar);
+  --radius:var(--r);
+  --radius-sm:var(--r-sm);
+  --shadow:var(--sombra);
+  --shadow-lg:var(--sombra-alta);
+}
