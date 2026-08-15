@@ -356,3 +356,10 @@ select.input{appearance:none;
 .e-donante{display:flex;align-items:center;gap:8px;flex:1;padding:12px 15px;
   border-radius:17px;background:#ECFDF5;border:2px solid rgba(4,120,87,.18);
   color:var(--ok);font-size:14px;font-weight:700;line-height:1.25}
+
+/* Una mascota perdida no es una urgencia médica: el mismo bloque, sin
+   el rojo que alarma a quien la encontró */
+.e-critico.calmo{background:var(--pulso-claro);border-color:rgba(3,47,110,.18);
+  border-left-color:var(--marco)}
+.e-critico.calmo .t{color:var(--marco)}
+.e-critico.calmo .c{color:var(--tinta)}

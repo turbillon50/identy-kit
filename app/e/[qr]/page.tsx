@@ -115,10 +115,12 @@ export default async function Emergencia({ params }: { params: { qr: string } })
         )}
       </div>
 
-      {/* Lo que puede matar a alguien si no se sabe */}
+      {/* Lo que hay que saber antes de actuar. En una persona va en rojo
+          porque puede matarla; en una mascota perdida no hay urgencia médica
+          que justifique alarmar a quien la encontró. */}
       {critico && (
-        <div className="e-critico">
-          <div className="t">Antes de atender</div>
+        <div className={`e-critico${esMascota ? " calmo" : ""}`}>
+          <div className="t">{esMascota ? `Sobre ${id.display_name}` : "Antes de atender"}</div>
           <div className="c">{critico}</div>
         </div>
       )}
