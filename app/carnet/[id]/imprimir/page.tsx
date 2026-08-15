@@ -7,37 +7,87 @@ import PrintButton from "./PrintButton";
 
 export const dynamic = "force-dynamic";
 
-export default async function Print({ params }: { params: { id: string } }) {
+/**
+ * La hoja para imprimir.
+ *
+ * Antes daba una sola tarjeta. Pero nadie usa una: se quiere una en la
+ * cartera, una pegada atrás del celular, y si es mascota, una chiquita para
+ * el collar. Por eso esta hoja trae las tres medidas listas para recortar,
+ * en una sola impresión.
+ */
+export default async function Imprimir({ params }: { params: { id: string } }) {
   const { userId } = await auth();
-  const rows = await sql`select * from identities where id=${params.id} and owner_clerk_user_id=${userId}` as any[];
-  if (!rows.length) notFound();
-  const id = rows[0];
+  const filas = await sql`
+    select * from identities
+    where id=${params.id} and owner_clerk_user_id=${userId}` as any[];
+  if (!filas.length) notFound();
+
+  const id = filas[0];
   const base = process.env.NEXT_PUBLIC_APP_URL || "https://identykit.xyz";
-  const svg = await qrSvg(`${base}/e/${id.qr_token}`, { color: "#0a1220" });
-  const isPet = id.kind === "pet";
+  const url = `${base}/e/${id.qr_token}`;
+  const grande = await qrSvg(url, { color: "#032F6E", margin: 0 });
+  const chico = await qrSvg(url, { color: "#032F6E", margin: 0 });
+  const esMascota = id.kind === "pet";
+
   return (
-    <div className="wrap" style={{ maxWidth: 420 }}>
-      <div className="top noprint"><Link href={`/carnet/${id.id}`} className="sub">‹ Volver</Link><b>Imprimir</b><span/></div>
-      <div className="printcard card" style={{ padding: 0, overflow: "hidden" }}>
-        <div style={{ background: "linear-gradient(135deg,#1e63d0,#2fa8e6)", color: "#fff", padding: "14px 18px", display: "flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
-          <img src="/icon-192.png" width={22} height={22} alt=""/> Identy-Kit
+    <div className="wrap" style={{ maxWidth: 460, paddingTop: 16 }}>
+      <div className="top no-print">
+        <Link href={`/carnet/${id.id}`} className="sub" style={{ fontWeight: 600 }}>
+          ‹ Volver
+        </Link>
+        <b style={{ fontSize: 16 }}>Imprimir</b>
+        <span />
+      </div>
+
+      <p className="sub no-print" style={{ marginBottom: 18, lineHeight: 1.55 }}>
+        Imprime esta hoja y recorta lo que necesites. Si puedes, usa papel
+        grueso o mándala a plastificar — va a andar en la cartera mucho tiempo.
+      </p>
+
+      {/* Tamaño cartera, proporción de tarjeta bancaria */}
+      <div className="p-tarjeta">
+        <div className="p-banda">
+          <img src="/icon-192.png" width={19} height={19} alt="" style={{ borderRadius: 5 }} />
+          Identy·kit
+          <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: ".1em", opacity: .9 }}>
+            {esMascota ? "MASCOTA" : "EMERGENCIA"}
+          </span>
         </div>
-        <div style={{ padding: 20, display: "flex", gap: 16, alignItems: "center" }}>
-          <div dangerouslySetInnerHTML={{ __html: svg }} style={{ width: 120, height: 120, flexShrink: 0 }} />
-          <div>
-            <div style={{ fontSize: 19, fontWeight: 800 }}>{id.display_name}</div>
-            <div className="sub">{isPet ? "Mascota" : "Ficha de emergencia"}</div>
-            {id.blood_type && <div style={{ marginTop: 6 }}><span className="tag red">🩸 {id.blood_type}</span></div>}
-            <div className="sub" style={{ marginTop: 8, fontSize: 12 }}>Escanea este código para ver datos vitales y a quién llamar.</div>
+        <div className="p-cuerpo">
+          <div className="p-qr" dangerouslySetInnerHTML={{ __html: grande }} />
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div className="p-nombre">{id.display_name}</div>
+            {id.blood_type && (
+              <div className="p-sangre">Sangre {id.blood_type}</div>
+            )}
+            <div className="p-txt">
+              {esMascota
+                ? "Si me encuentras, escanea este código para hablarle a mi familia."
+                : "Escanea este código para ver mis datos y a quién llamar."}
+            </div>
           </div>
         </div>
-        <div style={{ padding: "0 20px 16px", fontSize: 11, color: "#8a94a1", wordBreak: "break-all" }}>{base}/e/{id.qr_token}</div>
       </div>
-      <div className="grid2 noprint" style={{ marginTop: 18 }}>
-        <PrintButton/>
+
+      {/* Para pegar atrás del celular o en el collar */}
+      <div className="p-titulo no-print">Para pegar</div>
+      <div className="p-chicos">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="p-chico">
+            <div className="p-qr-chico" dangerouslySetInnerHTML={{ __html: chico }} />
+            <div className="p-chico-txt">
+              {esMascota ? "Escanéame" : "Emergencia"}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="p-liga">{url}</div>
+
+      <div className="grid2 no-print" style={{ marginTop: 22 }}>
+        <PrintButton />
         <Link href={`/carnet/${id.id}`} className="btn ghost">Listo</Link>
       </div>
-      <p className="sub noprint" style={{ marginTop: 14, textAlign: "center" }}>Imprime y recorta. Ponlo en la cartera, el collar, la mochila o pégalo en casa.</p>
     </div>
   );
 }

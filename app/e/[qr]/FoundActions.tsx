@@ -23,7 +23,7 @@ export default function FoundActions({ qr, name, isPet }: { qr: string; name: st
   };
 
   return (
-    <div className="card noprint" style={{ marginTop: 20, borderColor: "#d7f2ec", background: "#f2fbf9" }}>
+    <div className="card no-print" style={{ marginTop: 20, borderColor: "#d7f2ec", background: "#f2fbf9" }}>
       {state === "done" ? (
         <div className="center" style={{ gap: 6 }}>
           <div style={{ fontSize: 34 }}>✅</div>

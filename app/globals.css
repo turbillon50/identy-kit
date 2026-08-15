@@ -363,3 +363,42 @@ select.input{appearance:none;
   border-left-color:var(--marco)}
 .e-critico.calmo .t{color:var(--marco)}
 .e-critico.calmo .c{color:var(--tinta)}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOJA PARA IMPRIMIR
+   Tres medidas en una sola impresión: la de cartera, y tres
+   chiquitas para pegar atrás del celular o en el collar.
+   ═══════════════════════════════════════════════════════════════ */
+
+.p-tarjeta{width:100%;max-width:340px;border:1.5px dashed var(--linea);
+  border-radius:14px;overflow:hidden;background:#fff;margin-bottom:8px}
+.p-banda{display:flex;align-items:center;gap:7px;padding:9px 13px;
+  background:var(--marco);color:#fff;font-size:12.5px;font-weight:800;
+  letter-spacing:-.01em}
+.p-cuerpo{display:flex;gap:14px;padding:14px;align-items:center}
+.p-qr{width:96px;height:96px;flex-shrink:0}
+.p-qr svg{width:100%;height:100%;display:block}
+.p-nombre{font-size:16.5px;font-weight:800;letter-spacing:-.02em;
+  line-height:1.2;color:var(--tinta)}
+.p-sangre{display:inline-block;margin-top:5px;padding:3px 9px;border-radius:99px;
+  background:var(--alta-fondo);color:var(--alta);font-size:11.5px;font-weight:800}
+.p-txt{font-size:11px;color:var(--gris);line-height:1.4;margin-top:7px}
+
+.p-titulo{font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--gris-claro);margin:22px 0 9px}
+.p-chicos{display:flex;gap:9px;flex-wrap:wrap}
+.p-chico{width:88px;border:1.5px dashed var(--linea);border-radius:11px;
+  padding:8px;background:#fff;text-align:center}
+.p-qr-chico{width:100%;aspect-ratio:1}
+.p-qr-chico svg{width:100%;height:100%;display:block}
+.p-chico-txt{font-size:8.5px;font-weight:800;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--marco);margin-top:5px}
+
+.p-liga{font-size:10px;color:var(--gris-claro);word-break:break-all;
+  margin-top:14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+@media print{
+  .p-tarjeta,.p-chico{border-style:solid;border-color:#bbb}
+  .wrap{padding:0;max-width:none}
+  .p-titulo{display:block !important;color:#666}
+}
