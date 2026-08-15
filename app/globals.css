@@ -450,8 +450,12 @@ select.input{appearance:none;
   .adm-cols{grid-template-columns:1.35fr 1fr;align-items:start}
 }
 
-.adm-bloque{min-width:0}
-.adm-bloque h3{margin-top:0}
+.adm-bloque{min-width:0;display:flex;flex-direction:column}
+.adm-bloque > h3:first-child{margin-top:0}
+/* Sin esto el título se encima con la tarjeta de arriba: los márgenes
+   verticales se colapsan entre sí dentro de la rejilla */
+.adm-bloque > h3{margin:28px 0 11px}
+.adm-bloque > *:not(h3){margin-bottom:0}
 
 /* Los carnets en riesgo, en rejilla si caben */
 .adm-riesgo{display:grid;gap:11px}
