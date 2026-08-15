@@ -1,10 +1,11 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+// /admin NO va aquí: tiene su propio acceso con usuario y clave nuestros,
+// aparte de las cuentas de los titulares que maneja Clerk.
 const esPrivada = createRouteMatcher([
   "/dashboard(.*)",
   "/carnet(.*)",
-  "/admin(.*)",
   "/actividad(.*)",
   "/cuenta(.*)",
   "/api/identities(.*)",

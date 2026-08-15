@@ -18,8 +18,7 @@ const I = {
   out:<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>,
 };
 
-export default function AppShell({ active, title, children, esDueno = false }:
-  { active:string; title:string; children:React.ReactNode; esDueno?:boolean }) {
+export default function AppShell({ active, title, children }:{ active:string; title:string; children:React.ReactNode }) {
   const [drawer,setDrawer]=useState(false);
   const [sheet,setSheet]=useState(false);
   const [kind,setKind]=useState<string>("person");
@@ -60,7 +59,6 @@ export default function AppShell({ active, title, children, esDueno = false }:
         {dl("/dashboard",I.home(false),"Inicio",active==="inicio")}
         {dl("/dashboard",I.cards(false),"Mis carnets",active==="carnets")}
         {dl("/actividad",I.acti(false),"Actividad",active==="actividad")}
-        {esDueno && dl("/admin",I.admin,"Plataforma",active==="admin")}
         <div className="dsep"/>
         {dl("/cuenta",I.gear,"Ajustes",active==="cuenta")}
         

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { clerkClient } from "@clerk/nextjs/server";
 import { sql } from "../../lib/db";
-import { exigirDueno } from "../../lib/permisos";
-import AppShell from "../../components/AppShell";
+import { adminActual } from "../../lib/admin";
+import Entrar from "./Entrar";
+import Salir from "./Salir";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,10 @@ const EMOJI: Record<string, string> = { person: "🧑", pet: "🐾", other: "�
  * que es mejor que "no tienes permiso": no le confirma que la pantalla existe.
  */
 export default async function PanelDueno() {
-  await exigirDueno();
+  // La administración NO pasa por Clerk: usuario y clave nuestros, aparte de
+  // las cuentas de los titulares.
+  const admin = await adminActual();
+  if (!admin) return <Entrar />;
 
   const [k] = await sql`
     select
@@ -71,10 +75,14 @@ export default async function PanelDueno() {
   const quien = (id: string) => nombres[id] || id.slice(0, 14) + "…";
 
   return (
-    <AppShell esDueno active="admin" title="Plataforma">
-      <div className="h1">Plataforma</div>
-      <div className="sub" style={{ marginBottom: 20 }}>
-        Todo Identy-Kit, no solo tus carnets.
+    <div className="wrap" style={{ paddingTop: 18, paddingBottom: 60 }}>
+      <div className="row" style={{ justifyContent: "space-between",
+        alignItems: "flex-start", marginBottom: 20 }}>
+        <div>
+          <div className="h1">Plataforma</div>
+          <div className="sub">Todo Identy-Kit, en un lugar.</div>
+        </div>
+        <Salir />
       </div>
 
       <div className="kpigrid">
@@ -209,10 +217,9 @@ export default async function PanelDueno() {
       <div style={{ marginTop: 26, padding: "14px 16px", borderRadius: 13,
         background: "var(--pulso-claro)", fontSize: 13, color: "var(--marco)",
         lineHeight: 1.55 }}>
-        Esta pantalla solo la ve quien tiene rol de dueño. Para dar o quitar ese
-        rol, se marca <b>rol: dueno</b> en los datos públicos del usuario, desde
-        el panel de Clerk.
+        Entraste como <b>{admin}</b>. La sesión dura 12 horas y se cierra sola.
+        Este acceso es aparte de las cuentas de los titulares.
       </div>
-    </AppShell>
+    </div>
   );
 }

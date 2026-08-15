@@ -3,7 +3,6 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { sql } from "../../lib/db";
 import AppShell from "../../components/AppShell";
 
-import { esDueno } from "../../lib/permisos";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +52,7 @@ export default async function Panel() {
   const nombre = user?.firstName || "";
 
   return (
-    <AppShell esDueno={await esDueno()} active="inicio" title="Inicio">
+    <AppShell active="inicio" title="Inicio">
       <div className="h1">Hola{nombre ? `, ${nombre}` : ""}</div>
       <div className="sub" style={{ marginBottom: 20 }}>
         {total === 0
