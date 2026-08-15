@@ -41,7 +41,8 @@ export async function POST(req: Request) {
       });
     } catch { /* el escaneo ya quedó guardado */ }
 
-    return NextResponse.json({ ok: true, avisado: !!aviso.enviado });
+    return NextResponse.json({ ok: true, avisado: !!aviso.enviado,
+      motivo: aviso.enviado ? undefined : aviso.motivo });
   } catch (e: any) {
     return NextResponse.json({ error: "No se pudo registrar" }, { status: 500 });
   }

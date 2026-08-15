@@ -1,5 +1,3 @@
-import { clerkClient } from "@clerk/nextjs/server";
-
 /**
  * El aviso al titular cuando alguien escanea su carnet.
  *
@@ -28,14 +26,21 @@ export async function avisarEscaneo(opts: {
   const key = process.env.RESEND_API_KEY;
   if (!key) return { enviado: false, motivo: "sin servicio de correo" };
 
+  // Se consulta la API de Clerk directo y no con su módulo: aquí no hay una
+  // sesión de por medio — el escaneo lo hace un desconocido — y el módulo
+  // espera vivir dentro de una petición autenticada.
   let correo = "", nombre = "";
   try {
-    const cliente = await clerkClient();
-    const u = await cliente.users.getUser(opts.clerkUserId);
-    correo = u.emailAddresses?.[0]?.emailAddress || "";
-    nombre = u.firstName || "";
-  } catch {
-    return { enviado: false, motivo: "no encontré al titular" };
+    const r = await fetch(`https://api.clerk.com/v1/users/${opts.clerkUserId}`, {
+      headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!r.ok) return { enviado: false, motivo: `no encontré al titular (${r.status})` };
+    const u = await r.json();
+    correo = u?.email_addresses?.[0]?.email_address || "";
+    nombre = u?.first_name || "";
+  } catch (e: any) {
+    return { enviado: false, motivo: "no pude consultar al titular" };
   }
   if (!correo) return { enviado: false, motivo: "el titular no tiene correo" };
 
