@@ -1,6 +1,9 @@
 import { sql } from "../../../lib/db";
 import { NextResponse } from "next/server";
 
+// Toca la base en cada llamada: no se puede precalcular al compilar.
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   const b = await req.json().catch(() => ({}));
   const idr = await sql`select id from identities where qr_token=${b.qr}` as any[];

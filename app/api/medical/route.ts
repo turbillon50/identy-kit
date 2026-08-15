@@ -2,6 +2,9 @@ import { auth } from "@clerk/nextjs/server";
 import { sql } from "../../../lib/db";
 import { NextResponse } from "next/server";
 
+// Toca la base en cada llamada: no se puede precalcular al compilar.
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "no auth" }, { status: 401 });

@@ -1,26 +1,51 @@
-import { sql } from "../../../../lib/db";
+import { sql, sqlArmada } from "../../../../lib/db";
 import { NextResponse } from "next/server";
 import { auth as clerkAuth } from "@clerk/nextjs/server";
 
-const FIELDS = ["display_name","kind","species","breed","color","sex","birth_date","blood_type","weight","height","organ_donor","microchip","owner_name","owner_phone","reward_note","public_note","photo_url","national_id"];
+// Toca la base en cada llamada: no se puede precalcular al compilar.
+export const dynamic = "force-dynamic";
+
+// Los únicos campos que se pueden tocar. El nombre de columna nunca viene de
+// fuera: se toma de esta lista, y los valores van siempre como parámetros.
+const CAMPOS = [
+  "display_name", "kind", "species", "breed", "color", "sex", "birth_date",
+  "blood_type", "weight", "height", "organ_donor", "microchip", "owner_name",
+  "owner_phone", "reward_note", "public_note", "photo_url", "national_id",
+] as const;
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const { userId } = await clerkAuth();
-  if (!userId) return NextResponse.json({ error: "no auth" }, { status: 401 });
-  const own = await sql`select id from identities where id=${params.id} and owner_clerk_user_id=${userId}` as any[];
-  if (!own.length) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!userId) return NextResponse.json({ error: "Sin sesión" }, { status: 401 });
+
+  const propio = await sql`
+    select id from identities
+    where id=${params.id} and owner_clerk_user_id=${userId}` as any[];
+  if (!propio.length)
+    return NextResponse.json({ error: "Ese carnet no es tuyo" }, { status: 403 });
+
   const b = await req.json();
-  for (const f of FIELDS) {
-    if (f in b) {
-      await sql.query(`update identities set ${f}=$1, updated_at=now() where id=$2`, [b[f] === "" ? null : b[f], params.id]);
-    }
-  }
-  return NextResponse.json({ ok: true });
+  const tocados = CAMPOS.filter((f) => f in b);
+  if (!tocados.length) return NextResponse.json({ ok: true, sinCambios: true });
+
+  // Una sola escritura, no una por campo: antes esto hacía hasta 18 viajes a
+  // la base para guardar un carnet, y si fallaba a la mitad quedaba a medias.
+  const sets = tocados.map((f, i) => `${f}=$${i + 1}`).join(", ");
+  const valores = tocados.map((f) => (b[f] === "" ? null : b[f]));
+
+  await sqlArmada(
+    `update identities set ${sets}, updated_at=now()
+     where id=$${tocados.length + 1} and owner_clerk_user_id=$${tocados.length + 2}`,
+    [...valores, params.id, userId]
+  );
+
+  return NextResponse.json({ ok: true, campos: tocados.length });
 }
 
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
   const { userId } = await clerkAuth();
-  if (!userId) return NextResponse.json({ error: "no auth" }, { status: 401 });
-  await sql`delete from identities where id=${params.id} and owner_clerk_user_id=${userId}`;
+  if (!userId) return NextResponse.json({ error: "Sin sesión" }, { status: 401 });
+  await sql`
+    delete from identities
+    where id=${params.id} and owner_clerk_user_id=${userId}`;
   return NextResponse.json({ ok: true });
 }
