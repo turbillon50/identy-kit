@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const CAMPOS = [
   "display_name", "kind", "species", "breed", "color", "sex", "birth_date",
   "blood_type", "weight", "height", "organ_donor", "microchip", "owner_name",
-  "owner_phone", "reward_note", "public_note", "photo_url", "national_id",
+  "owner_phone", "reward_note", "public_note", "photo_url", "national_id", "is_active",
 ] as const;
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {

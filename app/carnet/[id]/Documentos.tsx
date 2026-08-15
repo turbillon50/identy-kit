@@ -40,7 +40,8 @@ export default function Documentos({ carnetId, inicial, esMascota }:
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState("");
   const [quitando, setQuitando] = useState("");
-  const [nuevo, setNuevo] = useState({ tipo: "identificacion", titulo: "", enFicha: false });
+  const [nuevo, setNuevo] = useState({ tipo: "identificacion", titulo: "",
+    enFicha: false, vence: "" });
   const [abierto, setAbierto] = useState(false);
   const campo = useRef<HTMLInputElement>(null);
 
@@ -56,11 +57,12 @@ export default function Documentos({ carnetId, inicial, esMascota }:
       fd.append("doc_type", nuevo.tipo);
       fd.append("title", nuevo.titulo);
       fd.append("visible_en_emergencia", String(nuevo.enFicha));
+      if (nuevo.vence) fd.append("vence", nuevo.vence);
       const res = await fetch("/api/documentos", { method: "POST", body: fd });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "No se pudo subir");
       setDocs((l) => [d, ...l]);
-      setNuevo({ tipo: "identificacion", titulo: "", enFicha: false });
+      setNuevo({ tipo: "identificacion", titulo: "", enFicha: false, vence: "" });
       setAbierto(false);
       r.refresh();
     } catch (e: any) { setError(e.message); }
@@ -140,6 +142,15 @@ export default function Documentos({ carnetId, inicial, esMascota }:
                     <div className="sub" style={{ fontSize: 12.5, marginTop: 1 }}>
                       {[TIPOS.find((t) => t.v === d.doc_type)?.t, pesa(d.tamano)]
                         .filter(Boolean).join(" · ")}
+                      {d.vence && (
+                        <span style={{ color: new Date(d.vence) < new Date()
+                          ? "var(--alta)" : "var(--ambar)", fontWeight: 700 }}>
+                          {" · "}
+                          {new Date(d.vence) < new Date() ? "vencido"
+                            : `vence ${new Date(d.vence).toLocaleDateString("es-MX",
+                                { day: "numeric", month: "short" })}`}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <button onClick={() => setQuitando(d.id)}
@@ -171,6 +182,16 @@ export default function Documentos({ carnetId, inicial, esMascota }:
           </select>
           <input className="input" value={nuevo.titulo} placeholder="Cómo le quieres llamar"
             onChange={(e) => setNuevo((s) => ({ ...s, titulo: e.target.value }))} />
+          <div>
+            <div className="label">
+              ¿Vence?
+              <span style={{ fontWeight: 500, color: "var(--gris-claro)" }}>
+                {" "}· te avisamos antes
+              </span>
+            </div>
+            <input className="input" type="date" value={nuevo.vence}
+              onChange={(e) => setNuevo((s) => ({ ...s, vence: e.target.value }))} />
+          </div>
           <label className="row" style={{ gap: 9, cursor: "pointer" }}>
             <input type="checkbox" checked={nuevo.enFicha}
               onChange={(e) => setNuevo((s) => ({ ...s, enFicha: e.target.checked }))}

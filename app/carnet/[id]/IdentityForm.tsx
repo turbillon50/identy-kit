@@ -213,6 +213,39 @@ export default function IdentityForm({ identity }: { identity: any }) {
       <button className="btn" onClick={guardar} disabled={!!estado}>
         {estado || "Guardar cambios"}
       </button>
+
+      {/* Apagar un carnet es lo que se hace cuando se pierde la tarjeta, o
+          cuando el código ya anda circulando y no se quiere que abra más. */}
+      <div style={{ marginTop: 18, paddingTop: 16,
+        borderTop: "1px solid var(--linea-suave)" }}>
+        <label className="row" style={{ gap: 11, cursor: "pointer",
+          alignItems: "flex-start" }}>
+          <input type="checkbox" checked={f.is_active !== false}
+            onChange={async (e) => {
+              const activo = e.target.checked;
+              up("is_active", activo);
+              try {
+                await fetch(`/api/identities/${identity.id}`, {
+                  method: "PATCH", headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ is_active: activo }),
+                });
+                setEstado(activo ? "Código encendido" : "Código apagado");
+                r.refresh();
+                setTimeout(() => setEstado(""), 2200);
+              } catch { up("is_active", !activo); setError("No se pudo cambiar"); }
+            }}
+            style={{ width: 20, height: 20, accentColor: "var(--marco)", marginTop: 1 }} />
+          <span style={{ minWidth: 0 }}>
+            <span style={{ fontSize: 14.5, fontWeight: 700, display: "block" }}>
+              El código funciona
+            </span>
+            <span className="sub" style={{ fontSize: 12.5, lineHeight: 1.45 }}>
+              Si lo apagas, quien escanee ya no verá nada. Úsalo si perdiste la
+              tarjeta o ya no quieres que abra.
+            </span>
+          </span>
+        </label>
+      </div>
     </div>
   );
 }
