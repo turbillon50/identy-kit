@@ -16,7 +16,13 @@ export const viewport = { width: "device-width", initialScale: 1, maximumScale: 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider
-      localization={esES}
+      localization={{
+        ...esES,
+        signIn: { ...esES.signIn, start: { ...esES.signIn?.start,
+          subtitle: "para entrar a tu carnet" } },
+        signUp: { ...esES.signUp, start: { ...esES.signUp?.start,
+          subtitle: "para crear tu carnet de emergencia" } },
+      }}
       appearance={{
         variables: {
           colorPrimary: "#032F6E",
