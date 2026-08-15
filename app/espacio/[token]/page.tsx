@@ -1,139 +1,187 @@
 import { sql } from "@/lib/db";
+import { ageFrom } from "@/lib/util";
 
 export const dynamic = "force-dynamic";
 
-function pct(id: any, hasMed: boolean, contacts: number) {
-  const fields = [
-    !!id.photo_url,
-    !!id.blood_type,
-    !!id.birth_date,
-    !!(id.public_note || id.national_id),
-    hasMed,
-    contacts > 0,
-  ];
-  return Math.round((fields.filter(Boolean).length / fields.length) * 100);
-}
+const EMOJI: Record<string, string> = { person: "🧑", pet: "🐾", other: "📦" };
+const ICONO = (t: string) =>
+  t === "seguro" ? "🛡️" : t === "receta" ? "💊" : t === "vacunas" ? "💉"
+  : t === "estudio" ? "🔬" : t === "identificacion" ? "🪪" : "📄";
 
-function fechaCorta(d: any) {
-  try {
-    return new Date(d).toLocaleDateString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-  } catch {
-    return "";
-  }
-}
-
+/**
+ * Lo que ve quien recibió un acceso compartido.
+ *
+ * Antes esta pantalla mostraba TODOS los carnets del dueño: si le dabas acceso
+ * a la escuela para ver el de tu hijo, veía también el tuyo, el de tu papá y
+ * el del perro. Ahora muestra solo el carnet que se compartió, y los
+ * documentos solo si se marcó ese permiso.
+ *
+ * Es una vista de lectura. Quien entra aquí no puede cambiar nada.
+ */
 export default async function Espacio({ params }: { params: { token: string } }) {
-  const grant = (await sql`
-    select owner_clerk_user_id, label from access_grants
-    where token=${params.token} and is_active=true limit 1
-  `) as any[];
+  const filas = await sql`
+    select * from access_grants where token = ${params.token} limit 1` as any[];
 
-  if (!grant.length) {
+  const acceso = filas[0];
+  const vencido = acceso?.vence && new Date(acceso.vence) < new Date();
+
+  if (!acceso || !acceso.is_active || vencido) {
     return (
-      <div className="app">
-        <div className="app-in" style={{ paddingTop: 90, textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 10 }}>🔒</div>
-          <h1 style={{ fontSize: 20, color: "var(--brand-ink)", fontWeight: 800 }}>Acceso no válido</h1>
-          <p style={{ color: "#6b7688", fontSize: 14, marginTop: 6 }}>La liga no es correcta o el acceso fue desactivado.</p>
+      <div className="wrap" style={{ paddingTop: 90, textAlign: "center", maxWidth: 400 }}>
+        <img src="/icon-192.png" width={48} height={48} alt=""
+          style={{ borderRadius: 13, opacity: .5 }} />
+        <div style={{ fontSize: 19, fontWeight: 800, marginTop: 16, color: "var(--tinta)" }}>
+          {vencido ? "Este acceso ya venció" : "Este acceso no está disponible"}
         </div>
+        <p className="sub" style={{ marginTop: 8, lineHeight: 1.6 }}>
+          {vencido
+            ? "El plazo terminó. Pídele a quien te lo compartió que te dé uno nuevo."
+            : "La liga no es correcta, o quien te la compartió quitó el acceso."}
+        </p>
       </div>
     );
   }
 
-  const owner = grant[0].owner_clerk_user_id;
-  const label = grant[0].label || "Tu espacio";
+  // Solo el carnet que se compartió, no todos los del dueño
+  const carnets = acceso.identity_id
+    ? await sql`select * from identities where id = ${acceso.identity_id}` as any[]
+    : [];
 
-  const ids = (await sql`select * from identities where owner_clerk_user_id=${owner} order by created_at asc`) as any[];
-  const medRows = (await sql`select distinct identity_id from medical_info where identity_id in (select id from identities where owner_clerk_user_id=${owner})`) as any[];
-  const conRows = (await sql`select identity_id, count(*)::int n from emergency_contacts where identity_id in (select id from identities where owner_clerk_user_id=${owner}) group by identity_id`) as any[];
-  const avisos = (await sql`
-    select fe.finder_note, fe.lat, fe.lng, fe.created_at, i.display_name, i.kind
-    from found_events fe join identities i on i.id=fe.identity_id
-    where i.owner_clerk_user_id=${owner} order by fe.created_at desc limit 8
-  `) as any[];
+  if (!carnets.length) {
+    return (
+      <div className="wrap" style={{ paddingTop: 90, textAlign: "center", maxWidth: 400 }}>
+        <div style={{ fontSize: 18, fontWeight: 800 }}>Ese carnet ya no existe</div>
+      </div>
+    );
+  }
 
-  const medSet = new Set(medRows.map((r) => r.identity_id));
-  const conMap = new Map(conRows.map((r) => [r.identity_id, r.n]));
+  const c = carnets[0];
+  const med = (await sql`
+    select * from medical_info where identity_id = ${c.id} limit 1` as any[])[0] || {};
+  const contactos = await sql`
+    select * from emergency_contacts where identity_id = ${c.id}
+    order by is_primary desc` as any[];
+  const docs = acceso.ve_documentos
+    ? await sql`select * from documents where identity_id = ${c.id}
+        order by created_at desc` as any[]
+    : [];
 
-  const personas = ids.filter((i) => i.kind === "person").length;
-  const mascotas = ids.filter((i) => i.kind === "pet").length;
-  const prom = ids.length
-    ? Math.round(ids.reduce((a, i) => a + pct(i, medSet.has(i.id), conMap.get(i.id) || 0), 0) / ids.length)
-    : 0;
+  // Se deja constancia de que entró: el dueño lo ve en su pantalla
+  try {
+    await sql`
+      update access_grants set usos = coalesce(usos,0) + 1, ultimo_uso = now()
+      where token = ${params.token}`;
+  } catch { /* que falle el conteo no debe tumbar la vista */ }
 
-  const kindLabel = (k: string) => (k === "person" ? "Persona" : k === "pet" ? "Mascota" : "Otro");
+  const esMascota = c.kind === "pet";
+  const meta = [esMascota ? (c.breed || c.species) : ageFrom(c.birth_date),
+    c.sex, c.color].filter(Boolean).join(" · ");
 
   return (
-    <div className="app">
-      <div className="apptop">
-        <div className="app-in" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src="/icon-192.png" alt="" style={{ width: 34, height: 34, borderRadius: 9 }} />
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "var(--brand-ink)", lineHeight: 1.1 }}>Tu espacio</div>
-            <div style={{ fontSize: 11, color: "#6b7688" }}>Identy-Kit · {label}</div>
+    <div className="wrap" style={{ paddingTop: 16, maxWidth: 560 }}>
+      <div className="row" style={{ gap: 10, marginBottom: 18 }}>
+        <img src="/icon-192.png" width={32} height={32} alt="" style={{ borderRadius: 9 }} />
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-.02em" }}>
+            Identy·kit
+          </div>
+          <div className="sub" style={{ fontSize: 12 }}>
+            Acceso compartido contigo · {acceso.label}
           </div>
         </div>
       </div>
 
-      <div className="app-in" style={{ paddingTop: 18 }}>
-        <div className="kpigrid">
-          <div className="kpi"><span className="bar" /><div className="ki">🪪</div><div className="kv">{ids.length}</div><div>Carnets</div></div>
-          <div className="kpi"><span className="bar" /><div className="ki">📈</div><div className="kv">{prom}%</div><div>Perfil promedio</div></div>
-          <div className="kpi"><span className="bar" /><div className="ki">👥</div><div className="kv">{personas}</div><div>Personas</div></div>
-          <div className="kpi"><span className="bar" /><div className="ki">🐾</div><div className="kv">{mascotas}</div><div>Mascotas</div></div>
-        </div>
-
-        <div className="seclabel" style={{ marginTop: 22 }}>Tus carnets</div>
-        {ids.map((i) => {
-          const p = pct(i, medSet.has(i.id), conMap.get(i.id) || 0);
-          const col = p >= 80 ? "#16a765" : p >= 50 ? "#e0a412" : "#e0574a";
-          return (
-            <div key={i.id} style={{ background: "#fff", border: "1px solid #e6ebf2", borderRadius: 14, padding: "14px 16px", marginBottom: 10 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 42, height: 42, borderRadius: 11, background: "#eef4ff", color: "#1e63d0", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, flexShrink: 0 }}>
-                  {(i.display_name || "?").slice(0, 1).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--brand-ink)" }}>{i.display_name || "Sin nombre"}</div>
-                  <div style={{ fontSize: 11, color: "#6b7688" }}>{kindLabel(i.kind)}{i.blood_type ? " · " + i.blood_type : ""}</div>
-                </div>
-                {i.qr_token && (
-                  <a href={`https://identykit.xyz/e/${i.qr_token}`} style={{ fontSize: 12, color: "#1e63d0", fontWeight: 700, textDecoration: "none", flexShrink: 0 }}>Ver ficha ›</a>
-                )}
-              </div>
-              <div style={{ marginTop: 11, display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ flex: 1, height: 7, background: "#eef2f7", borderRadius: 99, overflow: "hidden" }}>
-                  <div style={{ width: p + "%", height: "100%", background: col, borderRadius: 99 }} />
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: col, minWidth: 32, textAlign: "right" }}>{p}%</div>
-              </div>
-            </div>
-          );
-        })}
-
-        <div className="seclabel" style={{ marginTop: 22 }}>Avisos recientes</div>
-        {avisos.length === 0 && (
-          <div style={{ color: "#6b7688", fontSize: 13, padding: "10px 2px" }}>Aún no hay avisos. Aquí verás cuando alguien escanee un QR.</div>
-        )}
-        {avisos.map((a, k) => (
-          <div key={k} className="acti" style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "1px solid #eef2f7" }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: "#fff3f2", color: "#e0574a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>📍</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12.5, color: "var(--brand-ink)", fontWeight: 700 }}>{a.display_name}</div>
-              <div style={{ fontSize: 11.5, color: "#5b6675" }}>{a.finder_note}</div>
-              <div style={{ fontSize: 10.5, color: "#9aa4b2", marginTop: 2 }}>
-                {fechaCorta(a.created_at)}
-                {a.lat && a.lng ? (
-                  <> · <a href={`https://maps.google.com/?q=${a.lat},${a.lng}`} style={{ color: "#1e63d0" }}>ver mapa</a></>
-                ) : null}
-              </div>
-            </div>
+      <div className="card">
+        <div className="row" style={{ gap: 14 }}>
+          <div className="avatar" style={{ width: 58, height: 58, fontSize: 26 }}>
+            {c.photo_url
+              ? <img src={c.photo_url} alt="" style={{ width: "100%", height: "100%",
+                  objectFit: "cover", borderRadius: 15 }} />
+              : EMOJI[c.kind] || "🧑"}
           </div>
-        ))}
-
-        <div style={{ textAlign: "center", color: "#9aa4b2", fontSize: 10.5, margin: "26px 0 8px" }}>
-          Identy-Kit · Espacio privado · acceso protegido por clave personal
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: "-.02em" }}>
+              {c.display_name}
+            </div>
+            {meta && <div className="sub" style={{ fontSize: 13.5 }}>{meta}</div>}
+          </div>
+          {c.blood_type && (
+            <div className="e-sangre" style={{ minWidth: 66, padding: "9px 8px" }}>
+              <span className="n" style={{ fontSize: 25 }}>{c.blood_type}</span>
+              <span className="t" style={{ fontSize: 8.5 }}>Sangre</span>
+            </div>
+          )}
         </div>
+      </div>
+
+      {(med.allergies || med.conditions || c.public_note) && (
+        <div className="e-critico" style={{ marginTop: 14 }}>
+          <div className="t">Antes de atender</div>
+          <div className="c">
+            {[med.allergies, med.conditions, c.public_note].filter(Boolean).join(" · ")}
+          </div>
+        </div>
+      )}
+
+      {contactos.length > 0 && (<>
+        <h3>A quién llamar</h3>
+        {contactos.map((k: any) => (
+          <a key={k.id} href={`tel:${k.phone}`} className="e-llamar" style={{ minHeight: 58 }}>
+            <span>
+              <span className="quien" style={{ fontSize: 15.5 }}>{k.name}</span>
+              <span className="rel">{[k.relationship, k.phone].filter(Boolean).join(" · ")}</span>
+            </span>
+            <span className="accion">Llamar</span>
+          </a>
+        ))}
+      </>)}
+
+      {(med.medications || med.implants || med.preferred_hospital || med.doctor_name
+        || med.insurance || med.vaccinations) && (<>
+        <h3>Información médica</h3>
+        <div className="card">
+          {med.medications && <div className="kv"><span className="k">Medicamentos</span>
+            <span className="v">{med.medications}</span></div>}
+          {med.implants && <div className="kv"><span className="k">Implantes</span>
+            <span className="v">{med.implants}</span></div>}
+          {med.vaccinations && <div className="kv"><span className="k">Vacunas</span>
+            <span className="v">{med.vaccinations}</span></div>}
+          {med.preferred_hospital && <div className="kv"><span className="k">Hospital</span>
+            <span className="v">{med.preferred_hospital}</span></div>}
+          {med.doctor_name && (
+            <div className="kv"><span className="k">{esMascota ? "Veterinario" : "Médico"}</span>
+              <span className="v">{med.doctor_name}
+                {med.doctor_phone ? ` · ${med.doctor_phone}` : ""}</span></div>)}
+          {med.insurance && <div className="kv"><span className="k">Seguro</span>
+            <span className="v">{med.insurance}</span></div>}
+        </div>
+      </>)}
+
+      {docs.length > 0 && (<>
+        <h3>Documentos</h3>
+        <div className="card">
+          {docs.map((d: any, i: number) => (
+            <a key={d.id} href={d.file_url} target="_blank" rel="noreferrer"
+              className="row" style={{ gap: 12, padding: "12px 0",
+                borderBottom: i < docs.length - 1 ? "1px solid var(--linea-suave)" : "none" }}>
+              <div style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0,
+                background: "var(--pulso-claro)", display: "flex", alignItems: "center",
+                justifyContent: "center", fontSize: 17 }}>{ICONO(d.doc_type)}</div>
+              <span style={{ flex: 1, fontSize: 14.5, fontWeight: 700 }}>{d.title}</span>
+              <span style={{ color: "var(--gris-claro)", fontSize: 19 }}>›</span>
+            </a>
+          ))}
+        </div>
+      </>)}
+
+      <div className="e-pie" style={{ marginTop: 26, flexDirection: "column", gap: 5 }}>
+        <span>Solo lectura · no puedes cambiar nada desde aquí</span>
+        {acceso.vence && (
+          <span style={{ fontSize: 11.5 }}>
+            Este acceso vence el {new Date(acceso.vence).toLocaleDateString("es-MX",
+              { day: "numeric", month: "long", year: "numeric" })}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import ContactsPanel from "./ContactsPanel";
 import QrShare from "./QrShare";
 import BotonAuxilio from "./BotonAuxilio";
 import Documentos from "./Documentos";
+import Accesos from "./Accesos";
 import AppShell from "../../../components/AppShell";
 
 
@@ -46,6 +47,9 @@ export default async function Carnet({ params }: { params: { id: string } }) {
   const docs = await sql`
     select * from documents where identity_id=${id.id}
     order by created_at desc` as any[];
+  const accesos = await sql`
+    select token, label, is_active, vence, ultimo_uso, usos, ve_documentos
+    from access_grants where identity_id=${id.id} order by created_at desc` as any[];
   const auxilios = await sql`
     select * from sos_events where identity_id=${id.id}
     order by triggered_at desc limit 3` as any[];
@@ -181,6 +185,9 @@ export default async function Carnet({ params }: { params: { id: string } }) {
 
       <h3>Ficha médica</h3>
       <MedicalForm identityId={id.id} initial={med} isPet={esMascota} />
+
+      <h3>Quién más puede verlo</h3>
+      <Accesos carnetId={id.id} inicial={accesos} />
 
       <h3>Datos del carnet</h3>
       <IdentityForm identity={id} />
