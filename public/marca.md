@@ -33,3 +33,13 @@ Las llaves del sistema son UUID, no texto. Al agregar columnas que apunten a
 `identities.id` hay que declararlas `uuid`: una columna `text` compila pero
 truena en tiempo de ejecución con "operator does not exist: uuid = text",
 y solo se descubre cuando alguien usa esa pantalla.
+
+## Nota de limpieza (20-ago-2026)
+
+Los archivos `logo.svg` y `logomark.svg` seguían en el repositorio y se servían en
+producción aunque este documento decía que se habían eliminado. Eran la versión
+turquesa (#1FD1B8, #16A695, #26E0C4) — otra marca. Ningún componente los
+referenciaba. Se eliminaron de verdad.
+
+Si se necesita un logo vectorial, hay que generarlo en AZUL a partir de
+`logo.png`, respetando #032F6E y #01B3F4.
