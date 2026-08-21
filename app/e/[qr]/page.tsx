@@ -92,10 +92,10 @@ export default async function Emergencia({ params }: { params: { qr: string } })
       <div className="e-cabeza">
         <div className="row" style={{ alignItems: "center", gap: 14 }}>
           {id.photo_url
-            ? <img className="e-foto" src={id.photo_url} alt="" />
+            ? <img className="e-foto" src={id.photo_url} alt={`Foto de ${id.display_name}`} />
             : <div className="e-foto">{SIN_FOTO[id.kind] || "🧑"}</div>}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="e-nombre">{id.display_name}</div>
+            <h1 className="e-nombre">{id.display_name}</h1>
             {meta && <div className="e-meta">{meta}</div>}
           </div>
         </div>
