@@ -6,7 +6,6 @@ export const metadata = {
   title: "Identy-Kit — Identidad de emergencia con QR",
   description: "Un carnet digital con QR para personas, mascotas y más. Datos vitales accesibles en segundos.",
   manifest: "/manifest.json",
-  themeColor: "#032F6E",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Identy-Kit" },
   icons: { icon: "/favicon-32.png", apple: "/icon-192.png" },
   metadataBase: new URL("https://identykit.xyz"),
@@ -28,7 +27,10 @@ export const metadata = {
   },
 };
 
-export const viewport = { width: "device-width", initialScale: 1, maximumScale: 1, viewportFit: "cover" };
+export const viewport = {
+  width: "device-width", initialScale: 1, maximumScale: 1, viewportFit: "cover",
+  themeColor: "#032F6E",
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
