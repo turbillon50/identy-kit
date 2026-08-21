@@ -28,8 +28,8 @@ export default async function Espacio({ params }: { params: { token: string } })
   if (!acceso || !acceso.is_active || vencido) {
     return (
       <div className="wrap" style={{ paddingTop: 90, textAlign: "center", maxWidth: 400 }}>
-        <img src="/icon-192.png" width={48} height={48} alt=""
-          style={{ borderRadius: 13, opacity: .5 }} />
+        <img src="/marca-192.png" width={48} height={48} alt=""
+          style={{ opacity: .5 }} />
         <div style={{ fontSize: 19, fontWeight: 800, marginTop: 16, color: "var(--tinta)" }}>
           {vencido ? "Este acceso ya venció" : "Este acceso no está disponible"}
         </div>
@@ -80,7 +80,7 @@ export default async function Espacio({ params }: { params: { token: string } })
   return (
     <div className="wrap" style={{ paddingTop: 16, maxWidth: 560 }}>
       <div className="row" style={{ gap: 10, marginBottom: 18 }}>
-        <img src="/icon-192.png" width={32} height={32} alt="" style={{ borderRadius: 9 }} />
+        <img />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-.02em" }}>
             Identy·kit

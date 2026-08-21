@@ -47,7 +47,7 @@ export default async function Imprimir({ params }: { params: { id: string } }) {
       {/* Tamaño cartera, proporción de tarjeta bancaria */}
       <div className="p-tarjeta">
         <div className="p-banda">
-          <img src="/icon-192.png" width={19} height={19} alt="" style={{ borderRadius: 5 }} />
+          <img />
           Identy·kit
           <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: ".1em", opacity: .9 }}>
             {esMascota ? "MASCOTA" : "EMERGENCIA"}
