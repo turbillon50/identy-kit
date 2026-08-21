@@ -53,7 +53,7 @@ export default async function Panel() {
 
   return (
     <AppShell active="inicio" title="Inicio">
-      <div className="h1">Hola{nombre ? `, ${nombre}` : ""}</div>
+      <h1 className="h1">Hola{nombre ? `, ${nombre}` : ""}</h1>
       <div className="sub" style={{ marginBottom: 20 }}>
         {total === 0
           ? "Vamos a crear tu primer carnet."
@@ -156,8 +156,7 @@ export default async function Panel() {
                 {f.lat && (
                   <a target="_blank" rel="noreferrer"
                     href={`https://maps.google.com/?q=${f.lat},${f.lng}`}
-                    style={{ color: "var(--marco)", fontWeight: 700, fontSize: 13,
-                      display: "inline-block", marginTop: 3 }}>
+                    className="accion-linea" style={{ color: "var(--marco)", marginTop: 3 }}>
                     Ver dónde fue
                   </a>
                 )}

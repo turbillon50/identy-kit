@@ -78,7 +78,7 @@ export default async function PanelDueno() {
     <div className="adm">
       <div className="adm-top">
         <div>
-          <div className="h1">Plataforma</div>
+          <h1 className="h1">Plataforma</h1>
           <div className="sub">Todo Identy-Kit, en un lugar.</div>
         </div>
         <Salir />

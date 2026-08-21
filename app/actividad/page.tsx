@@ -51,7 +51,7 @@ export default async function Actividad() {
 
   return (
     <AppShell active="actividad" title="Actividad">
-      <div className="h1">Actividad</div>
+      <h1 className="h1">Actividad</h1>
       <div className="sub" style={{ marginBottom: 20 }}>
         Cada vez que alguien escanea, pide ayuda o entra con un acceso compartido.
       </div>
@@ -127,13 +127,13 @@ export default async function Actividad() {
                     {e.lat && (
                       <a target="_blank" rel="noreferrer"
                         href={`https://maps.google.com/?q=${e.lat},${e.lng}`}
-                        style={{ color: "var(--marco)", fontWeight: 700, fontSize: 13 }}>
+                        className="accion-linea" style={{ color: "var(--marco)" }}>
                         Ver dónde fue
                       </a>
                     )}
                     {e.carnet && (
                       <Link href={`/carnet/${e.carnet}`}
-                        style={{ color: "var(--gris)", fontWeight: 700, fontSize: 13 }}>
+                        className="accion-linea" style={{ color: "var(--gris)" }}>
                         Abrir carnet
                       </Link>
                     )}
