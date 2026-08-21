@@ -20,7 +20,7 @@ export default async function Portada() {
     <div className="lp">
       <nav className="lp-nav">
         <span className="lp-logo">
-          <img src="/icon-192.png" alt="" width={30} height={30} style={{ borderRadius: 8 }} />
+          <img src="/icon-192.png" alt="Identy-Kit" width={30} height={30} style={{ borderRadius: 8 }} />
           Identy·kit
         </span>
         <SignInButton mode="modal">

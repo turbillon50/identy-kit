@@ -55,7 +55,7 @@ export default function AppShell({ active, title, children }:{ active:string; ti
 
       {/* drawer */}
       <aside className={`drawer${drawer?" on":""}`}>
-        <div className="dh"><img src="/icon-192.png" alt=""/><div><b>Identy·kit</b><div className="sub" style={{fontSize:12}}>Tu identidad, segura</div></div></div>
+        <div className="dh"><img src="/icon-192.png" alt="Identy-Kit"/><div><b>Identy·kit</b><div className="sub" style={{fontSize:12}}>Tu identidad, segura</div></div></div>
         {dl("/dashboard",I.home(false),"Inicio",active==="inicio")}
         {dl("/dashboard",I.cards(false),"Mis carnets",active==="carnets")}
         {dl("/actividad",I.acti(false),"Actividad",active==="actividad")}

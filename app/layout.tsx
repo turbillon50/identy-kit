@@ -9,6 +9,23 @@ export const metadata = {
   themeColor: "#032F6E",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Identy-Kit" },
   icons: { icon: "/favicon-32.png", apple: "/icon-192.png" },
+  metadataBase: new URL("https://identykit.xyz"),
+  openGraph: {
+    type: "website",
+    locale: "es_MX",
+    url: "https://identykit.xyz",
+    siteName: "Identy-Kit",
+    title: "Identy-Kit — Tu identidad, segura en un QR",
+    description:
+      "Si algo te pasa, alguien va a saber a quién llamar. Un carnet con QR para ti, tu familia y tus mascotas.",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Identy-Kit — Tu identidad, segura en un QR" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Identy-Kit — Tu identidad, segura en un QR",
+    description: "Si algo te pasa, alguien va a saber a quién llamar.",
+    images: ["/og.jpg"],
+  },
 };
 
 export const viewport = { width: "device-width", initialScale: 1, maximumScale: 1, viewportFit: "cover" };
