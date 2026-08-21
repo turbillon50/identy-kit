@@ -227,7 +227,7 @@ export default async function Emergencia({ params }: { params: { qr: string } })
       <FoundActions qr={id.qr_token} name={id.display_name} isPet={esMascota} />
 
       <div className="e-pie">
-        <img />
+        <img src="/marca-192.png" alt="" width={19} height={19} />
         Protegido con Identy-Kit
       </div>
     </div>

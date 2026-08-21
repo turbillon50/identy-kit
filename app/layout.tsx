@@ -54,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           formButtonPrimary: { fontSize: "15px", fontWeight: "700", textTransform: "none" },
           card: { boxShadow: "0 18px 50px rgba(3,47,110,.16)", borderRadius: "20px" },
           headerTitle: { fontWeight: "800", letterSpacing: "-.02em" },
-          logoImage: { width: "108px" },
+          logoImage: { width: "104px", height: "auto" },
           footerActionLink: { color: "#032F6E", fontWeight: "700" },
         },
         layout: { logoImageUrl: "/logo.png", logoPlacement: "inside" },

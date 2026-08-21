@@ -38,7 +38,7 @@ export default function Entrar() {
       justifyContent: "center", padding: 22 }}>
       <div style={{ width: "100%", maxWidth: 350 }}>
         <div style={{ textAlign: "center", marginBottom: 22 }}>
-          <img />
+          <img src="/logo.png" alt="Identy-Kit" width={112} height={124} />
           <div style={{ fontSize: 17, fontWeight: 800, marginTop: 11,
             letterSpacing: "-.02em" }}>Administración</div>
         </div>

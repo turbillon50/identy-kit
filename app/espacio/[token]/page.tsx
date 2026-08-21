@@ -80,7 +80,7 @@ export default async function Espacio({ params }: { params: { token: string } })
   return (
     <div className="wrap" style={{ paddingTop: 16, maxWidth: 560 }}>
       <div className="row" style={{ gap: 10, marginBottom: 18 }}>
-        <img />
+        <img src="/marca-192.png" alt="" width={32} height={32} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-.02em" }}>
             Identy·kit
