@@ -530,3 +530,9 @@ select.input{appearance:none;
 .grab{width:38px;height:4px;border-radius:99px;background:var(--linea);
   margin:0 auto 15px}
 .sheet h3{margin-top:0}
+
+/* En papel: sin esto el navegador quita el fondo azul de la banda de la
+   tarjeta y el texto blanco queda invisible sobre blanco. */
+@media print{
+  .p-banda{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
