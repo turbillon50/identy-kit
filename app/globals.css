@@ -536,3 +536,18 @@ select.input{appearance:none;
 @media print{
   .p-banda{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* ══ Pase premium: iconos de marca y pantalla de carga ══ */
+.empty-ico{width:74px;height:74px;border-radius:23px;background:var(--pulso-claro);
+  color:var(--marco);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.typeico{display:flex;justify-content:center;margin-bottom:5px;color:inherit}
+.typeopt .em{display:flex;justify-content:center}
+.splash{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:26px;background:linear-gradient(180deg,#fff 30%,#EDF4FC)}
+.splash img{width:96px;height:auto;animation:splash-late 1.7s ease-in-out infinite}
+.splash-barra{width:130px;height:4px;border-radius:99px;background:#DCE7F4;overflow:hidden}
+.splash-barra span{display:block;height:100%;width:42%;border-radius:99px;background:#01B3F4;
+  animation:splash-corre 1.15s ease-in-out infinite}
+@keyframes splash-late{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.8;transform:scale(.965)}}
+@keyframes splash-corre{0%{transform:translateX(-130%)}100%{transform:translateX(360%)}}
+@media print{.splash{display:none}}

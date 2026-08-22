@@ -5,9 +5,10 @@ import { adminActual } from "../../lib/admin";
 import Entrar from "./Entrar";
 import Salir from "./Salir";
 
+import { IconoTipo } from "@/components/Iconos";
+
 export const dynamic = "force-dynamic";
 
-const EMOJI: Record<string, string> = { person: "🧑", pet: "🐾", other: "📦" };
 
 /**
  * Panel del dueño de la plataforma.
@@ -122,7 +123,7 @@ export default async function PanelDueno() {
           {aMedias.map((i: any) => (
             <div key={i.id} className="idcard">
               <div className="avatar" style={{ background: "var(--ambar-fondo)",
-                color: "var(--ambar)" }}>{EMOJI[i.kind] || "🧑"}</div>
+                color: "var(--ambar)" }}><IconoTipo kind={i.kind} size={24} /></div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 15 }}>{i.display_name}</div>
                 <div className="sub" style={{ fontSize: 12.5, marginTop: 2 }}>

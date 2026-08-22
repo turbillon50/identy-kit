@@ -4,10 +4,11 @@ import { sql } from "../../lib/db";
 import AppShell from "../../components/AppShell";
 
 
+import { IconoTipo, IcoCarnet } from "@/components/Iconos";
+
 export const dynamic = "force-dynamic";
 
 const TIPO: Record<string, string> = { person: "Persona", pet: "Mascota", other: "Otro" };
-const EMOJI: Record<string, string> = { person: "🧑", pet: "🐾", other: "📦" };
 
 /**
  * Qué tan útil sería este carnet si alguien lo escaneara ahorita.
@@ -81,13 +82,17 @@ export default async function Panel() {
 
       {total === 0 ? (
         <div className="empty">
-          <div style={{ fontSize: 40, marginBottom: 10 }}>🪪</div>
+          <div className="empty-ico"><IcoCarnet size={38} stroke={1.6} /></div>
           <b style={{ display: "block", fontSize: 16, color: "var(--tinta)" }}>
-            Todavía no tienes ningún carnet
+            Crea tu primer carnet
           </b>
           <div style={{ marginTop: 6, fontSize: 14, lineHeight: 1.55 }}>
-            Toca el botón azul de abajo. Se hace en cinco minutos y te va a pedir
-            solo lo que de verdad sirve en una emergencia.
+            Un carnet es una ficha de emergencia con su código QR: la traes en el
+            teléfono, la cartera o el collar de tu mascota. Quien la escanee ve
+            solo lo vital — tipo de sangre, alergias y a quién llamar.
+          </div>
+          <div style={{ marginTop: 10, fontSize: 14, fontWeight: 700, color: "var(--marco)" }}>
+            Toca el botón azul de abajo: se llena en un minuto.
           </div>
         </div>
       ) : (
@@ -100,7 +105,7 @@ export default async function Panel() {
                 <div className="avatar">
                   {i.photo_url
                     ? <img src={i.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 15 }} />
-                    : EMOJI[i.kind] || "🧑"}
+                    : <IconoTipo kind={i.kind} size={24} />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: "-.015em" }}>

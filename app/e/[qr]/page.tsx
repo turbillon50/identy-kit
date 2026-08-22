@@ -3,6 +3,8 @@ import { ageFrom } from "../../../lib/util";
 import { notFound } from "next/navigation";
 import FoundActions from "./FoundActions";
 
+import { IconoTipo, IconoDoc } from "@/components/Iconos";
+
 export const dynamic = "force-dynamic";
 
 /**
@@ -18,7 +20,6 @@ export const dynamic = "force-dynamic";
  * alergias, y a quién llamar.
  */
 
-const SIN_FOTO: Record<string, string> = { pet: "🐾", other: "📦", person: "🧑" };
 
 export default async function Emergencia({ params }: { params: { qr: string } }) {
   const filas = await sql`
@@ -93,7 +94,7 @@ export default async function Emergencia({ params }: { params: { qr: string } })
         <div className="row" style={{ alignItems: "center", gap: 14 }}>
           {id.photo_url
             ? <img className="e-foto" src={id.photo_url} alt={`Foto de ${id.display_name}`} />
-            : <div className="e-foto">{SIN_FOTO[id.kind] || "🧑"}</div>}
+            : <div className="e-foto"><IconoTipo kind={id.kind} size={30} /></div>}
           <div style={{ flex: 1, minWidth: 0 }}>
             <h1 className="e-nombre">{id.display_name}</h1>
             {meta && <div className="e-meta">{meta}</div>}
@@ -213,8 +214,7 @@ export default async function Emergencia({ params }: { params: { qr: string } })
               <div style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0,
                 background: "var(--pulso-claro)", display: "flex", alignItems: "center",
                 justifyContent: "center", fontSize: 17 }}>
-                {d.doc_type === "seguro" ? "🛡️" : d.doc_type === "receta" ? "💊"
-                  : d.doc_type === "vacunas" ? "💉" : "📄"}
+                <IconoDoc tipo={d.doc_type} size={18} />
               </div>
               <span style={{ flex: 1, fontSize: 14.5, fontWeight: 700,
                 color: "var(--tinta)" }}>{d.title}</span>

@@ -14,9 +14,10 @@ import Accesos from "./Accesos";
 import AppShell from "../../../components/AppShell";
 
 
+import { IconoTipo } from "@/components/Iconos";
+
 export const dynamic = "force-dynamic";
 
-const EMOJI: Record<string, string> = { person: "🧑", pet: "🐾", other: "📦" };
 
 /**
  * El carnet, del lado del titular.
@@ -118,7 +119,7 @@ export default async function Carnet({ params }: { params: { id: string } }) {
             {id.photo_url
               ? <img src={id.photo_url} alt="" style={{ width: "100%", height: "100%",
                   objectFit: "cover", borderRadius: 15 }} />
-              : EMOJI[id.kind] || "🧑"}
+              : <IconoTipo kind={id.kind} size={26} />}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-.02em" }}>

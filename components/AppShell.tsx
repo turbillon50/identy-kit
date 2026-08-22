@@ -1,4 +1,5 @@
 "use client";
+import { IconoTipo } from "@/components/Iconos";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -72,9 +73,9 @@ export default function AppShell({ active, title, children }:{ active:string; ti
         <h3>Nuevo carnet</h3>
         <div className="sub">¿Para quién es este carnet?</div>
         <div className="typegrid">
-          {[["person","🧑","Persona"],["pet","🐾","Mascota"],["other","📦","Otro"]].map(([k,e,n])=>(
+          {[["person","Persona"],["pet","Mascota"],["other","Otro"]].map(([k,n])=>(
             <div key={k} className={`typeopt${kind===k?" sel":""}`} onClick={()=>setKind(k)}>
-              <div className="em">{e}</div><div className="nm">{n}</div>
+              <div className="em"><IconoTipo kind={k} size={24} /></div><div className="nm">{n}</div>
             </div>
           ))}
         </div>

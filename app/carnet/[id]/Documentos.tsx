@@ -1,4 +1,5 @@
 "use client";
+import { IconoDoc } from "@/components/Iconos";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
@@ -23,10 +24,6 @@ const TIPOS = [
   { v: "otro", t: "Otro" },
 ];
 
-const ICONO = (tipo: string) =>
-  tipo === "seguro" ? "🛡️" : tipo === "receta" ? "💊"
-  : tipo === "vacunas" ? "💉" : tipo === "estudio" ? "🔬"
-  : tipo === "identificacion" ? "🪪" : "📄";
 
 function pesa(b: number) {
   if (!b) return "";
@@ -130,7 +127,7 @@ export default function Documentos({ carnetId, inicial, esMascota }:
                   <div style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0,
                     background: "var(--pulso-claro)", display: "flex",
                     alignItems: "center", justifyContent: "center", fontSize: 18 }}>
-                    {ICONO(d.doc_type)}
+                    <IconoDoc tipo={d.doc_type} size={18} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <a href={d.file_url} target="_blank" rel="noreferrer"

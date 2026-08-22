@@ -3,6 +3,8 @@ import { sql } from "../../lib/db";
 import AppShell from "../../components/AppShell";
 import Link from "next/link";
 
+import { IcoCampana } from "@/components/Iconos";
+
 export const dynamic = "force-dynamic";
 
 /**
@@ -58,6 +60,7 @@ export default async function Actividad() {
 
       {todo.length === 0 ? (
         <div className="empty">
+          <div className="empty-ico"><IcoCampana size={32} stroke={1.8} /></div>
           <b style={{ display: "block", fontSize: 16, color: "var(--tinta)" }}>
             Todavía no ha pasado nada
           </b>

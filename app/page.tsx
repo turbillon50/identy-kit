@@ -1,3 +1,4 @@
+import { IcoPersona, IcoAlerta } from "@/components/Iconos";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { SignInButton, SignUpButton } from "@clerk/nextjs";
@@ -50,10 +51,10 @@ export default async function Portada() {
 
           {/* Lo que vería quien escanea. Enseñarlo explica mejor que describirlo. */}
           <div className="mock" aria-label="Ejemplo de una ficha de emergencia">
-            <div className="banda">🚨 FICHA DE EMERGENCIA</div>
+            <div className="banda" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}><IcoAlerta size={13} stroke={2.4} /> FICHA DE EMERGENCIA</div>
             <div className="cuerpo">
               <div className="row" style={{ alignItems: "flex-start" }}>
-                <div className="e-foto" style={{ width: 56, height: 56, fontSize: 25 }}>🧑</div>
+                <div className="e-foto" style={{ width: 56, height: 56 }}><IcoPersona size={26} /></div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-.02em" }}>
                     María Fernanda L.

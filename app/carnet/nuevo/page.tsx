@@ -1,4 +1,5 @@
 "use client";
+import { IconoTipo } from "@/components/Iconos";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -54,12 +55,12 @@ export default function Nuevo() {
       <div className="card">
         <div className="label">¿Para quién es?</div>
         <div className="typegrid">
-          {[["person", "🧑", "Persona"], ["pet", "🐾", "Mascota"],
-            ["other", "📦", "Otro"]].map(([v, e, t]) => (
+          {[["person", "Persona"], ["pet", "Mascota"],
+            ["other", "Otro"]].map(([v, t]) => (
             <button key={v} type="button"
               className={`typeopt${tipo === v ? " on" : ""}`}
               onClick={() => setTipo(v)}>
-              <div style={{ fontSize: 22, marginBottom: 4 }}>{e}</div>
+              <div className="typeico"><IconoTipo kind={v} size={24} /></div>
               {t}
             </button>
           ))}

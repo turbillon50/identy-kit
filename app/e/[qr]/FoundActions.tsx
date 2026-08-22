@@ -1,4 +1,5 @@
 "use client";
+import { IcoCheckCirculo } from "@/components/Iconos";
 import { useState } from "react";
 
 export default function FoundActions({ qr, name, isPet }: { qr: string; name: string; isPet: boolean }) {
@@ -26,7 +27,7 @@ export default function FoundActions({ qr, name, isPet }: { qr: string; name: st
     <div className="card no-print" style={{ marginTop: 20, borderColor: "#d7f2ec", background: "#f2fbf9" }}>
       {state === "done" ? (
         <div className="center" style={{ gap: 6 }}>
-          <div style={{ fontSize: 34 }}>✅</div>
+          <div style={{ color: "var(--ok)" }}><IcoCheckCirculo size={40} stroke={1.8} /></div>
           <b>Aviso enviado</b>
           <div className="sub">{isPet ? "El dueño" : "Los contactos"} de {name} fueron notificados con tu ubicación. Gracias por ayudar.</div>
         </div>
@@ -38,7 +39,7 @@ export default function FoundActions({ qr, name, isPet }: { qr: string; name: st
           </div>
           {open && <textarea className="input" rows={2} placeholder="Nota opcional (ej: está bien, lo tengo en…)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 10 }} />}
           <button className="btn" onClick={() => open ? send() : setOpen(true)} disabled={state === "sending"}>
-            {state === "sending" ? "Enviando…" : open ? "📍 Enviar aviso con mi ubicación" : "🆘 Avisar que lo encontré"}
+            {state === "sending" ? "Enviando…" : open ? "Enviar aviso con mi ubicación" : "Avisar que lo encontré"}
           </button>
           {state === "err" && <div className="sub" style={{ color: "var(--danger)", marginTop: 8 }}>No se pudo enviar. Intenta de nuevo.</div>}
         </>

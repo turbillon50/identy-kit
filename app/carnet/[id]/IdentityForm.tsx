@@ -1,4 +1,5 @@
 "use client";
+import { IconoTipo } from "@/components/Iconos";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
@@ -101,7 +102,7 @@ export default function IdentityForm({ identity }: { identity: any }) {
           {foto
             ? <img src={foto} alt="" style={{ width: "100%", height: "100%",
                 objectFit: "cover", borderRadius: 15 }} />
-            : (esMascota ? "🐾" : "🧑")}
+            : <IconoTipo kind={esMascota ? "pet" : "person"} size={27} />}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <button className="btn ghost sm" disabled={subiendo}

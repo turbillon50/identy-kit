@@ -1,12 +1,10 @@
 import { sql } from "@/lib/db";
 import { ageFrom } from "@/lib/util";
 
+import { IconoTipo, IconoDoc } from "@/components/Iconos";
+
 export const dynamic = "force-dynamic";
 
-const EMOJI: Record<string, string> = { person: "🧑", pet: "🐾", other: "📦" };
-const ICONO = (t: string) =>
-  t === "seguro" ? "🛡️" : t === "receta" ? "💊" : t === "vacunas" ? "💉"
-  : t === "estudio" ? "🔬" : t === "identificacion" ? "🪪" : "📄";
 
 /**
  * Lo que ve quien recibió un acceso compartido.
@@ -97,7 +95,7 @@ export default async function Espacio({ params }: { params: { token: string } })
             {c.photo_url
               ? <img src={c.photo_url} alt="" style={{ width: "100%", height: "100%",
                   objectFit: "cover", borderRadius: 15 }} />
-              : EMOJI[c.kind] || "🧑"}
+              : <IconoTipo kind={c.kind} size={26} />}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: "-.02em" }}>
@@ -166,7 +164,7 @@ export default async function Espacio({ params }: { params: { token: string } })
                 borderBottom: i < docs.length - 1 ? "1px solid var(--linea-suave)" : "none" }}>
               <div style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0,
                 background: "var(--pulso-claro)", display: "flex", alignItems: "center",
-                justifyContent: "center", fontSize: 17 }}>{ICONO(d.doc_type)}</div>
+                justifyContent: "center", fontSize: 17 }}><IconoDoc tipo={d.doc_type} size={17} /></div>
               <span style={{ flex: 1, fontSize: 14.5, fontWeight: 700 }}>{d.title}</span>
               <span style={{ color: "var(--gris-claro)", fontSize: 19 }}>›</span>
             </a>
